@@ -1,0 +1,10 @@
+{
+	"id": "obsidian-tab-key",
+	"name": "Obsidian Tab Key",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Tab key inserts a tab, the way it should be.",
+	"author": "jerrymk",
+	"authorUrl": "https://github.com/jrymk",
+	"isDesktopOnly": false
+}
