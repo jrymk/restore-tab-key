@@ -1,10 +1,12 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 interface TabKeyPluginSettings {
+	onlyDisableIndent: boolean,
 	indentsIfSelection: boolean
 }
 
 const DEFAULT_SETTINGS: TabKeyPluginSettings = {
+	onlyDisableIndent: false,
 	indentsIfSelection: true
 }
 
@@ -21,6 +23,10 @@ export default class TabKeyPlugin extends Plugin {
 			if (!view)
 				return;
 			let editor = view.editor;
+			if (!editor.hasFocus())
+				return;
+			if (editor.getLine(editor.getCursor().line)[0] != '\t')
+				return;
 
 			if (e.code != 'Tab' || e.shiftKey)
 				return;
@@ -37,13 +43,9 @@ export default class TabKeyPlugin extends Plugin {
 			if (selection == '' || !this.settings.indentsIfSelection)
 				editor.setCursor(cursorPos);
 		});
-
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
 	}
 
 	onunload() {
-
 	}
 
 	async loadSettings() {
@@ -72,6 +74,15 @@ class SettingTab extends PluginSettingTab {
 		containerEl.createEl('i', { text: 'Restore tab key behaviour: tab key inserts a tab, the way it should be.' });
 		containerEl.createEl('br');
 
+		new Setting(containerEl)
+			.setName('Only disable indentation')
+			.setDesc('true: Will not insert tab character, will only prevent the line from indenting. ')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.indentsIfSelection)
+				.onChange(async (value) => {
+					this.plugin.settings.indentsIfSelection = value;
+					await this.plugin.saveSettings();
+				}));
 		new Setting(containerEl)
 			.setName('Indents when selection is not empty')
 			.setDesc('true(default): Select some text and press tab key will indent the selected lines. Same behaviour as most IDEs. \nfalse: Selection will be replaced with one tab')
