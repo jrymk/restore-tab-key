@@ -40,9 +40,13 @@ export default class TabKeyPlugin extends Plugin {
 
 				if (somethingSelected && this.settings.indentsIfSelection) {
 					// indent lines
+					console.log(cursorFrom.ch);
 					for (let line = cursorFrom.line; line <= cursorTo.line; line++)
-						editor.setLine(line, tabStr + editor.getLine(line));
-					editor.setSelection({ line: cursorAnchor.line, ch: cursorAnchor.ch + tabStr.length }, { line: cursorHead.line, ch: cursorHead.ch + tabStr.length });
+						if (editor.getLine(line) != "")
+							editor.setLine(line, tabStr + editor.getLine(line));
+					editor.setSelection(
+						{ line: cursorAnchor.line, ch: cursorAnchor.ch + (cursorFrom.ch == 0 ? 0 : tabStr.length) },
+						{ line: cursorHead.line, ch: cursorHead.ch + (cursorTo.ch == 0 ? 0 : tabStr.length) });
 				}
 				else {
 					// insert tab
