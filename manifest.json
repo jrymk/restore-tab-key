@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-tab-key",
 	"name": "Obsidian Tab Key",
-	"version": "1.2.1",
+	"version": "1.3.0",
 	"minAppVersion": "0.15.0",
 	"description": "Restore tab key behaviour: tab key inserts a tab, the way it should be.",
 	"author": "jerrymk",
