@@ -7,12 +7,12 @@ it solves the problem mentioned in this forum thread: https://forum.obsidian.md/
 
 ---
 
-![](img_plugin-settings.png)
+![](img_plugin-settings.png)\
 The tab key now works just like any other IDE. If you select some text and press tab, the selected lines will be indented. If nothing is selected, a tab will be inserted. There is also an option to insert tab when text is selected instead of indenting.
 
 ### Indent using tabs
 Tabs/indentation respects Obsidian app options below. In addition, you can customize the number of spaces inserted for indentation instead of fixed to 4 spaces, as opposed to only change how the tab character is rendered.
-![](img_obsidian-app-settings.png)
+![](img_obsidian-app-settings.png)\
 [suggested by huyz](https://github.com/jrymk/obsidian-tab-key/issues/1)
 
 ### Hard space
