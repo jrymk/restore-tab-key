@@ -23,3 +23,7 @@ live preview/source view: (Yes, with hard spaces as indentation it still turns i
 after render (reading view):\
 ![](img_hard-spaces-rendered.png)
 
+<mark><b>This option is off by default. If you indent in code blocks, the code might fail to run or compile because it is not a space or a tab. Copying code from the note may become extremely annoying. Only use this if you are not going to edit code blocks.</b></mark>\
+*Hard spaces for tab is generally unwanted in code blocks (enclosed in backticks \`\`\`, not the ones created by indenting), no matter it is C++ code or Dataview plugin code.*
+
+TODO: Use regular space (or tab) for indentation and tabbing inside a code block regardless of hard space setting. Since spaces works correctly in code blocks, there's no reason not to. 
