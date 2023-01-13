@@ -115,7 +115,7 @@ class SettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Use hard spaces')
-			.setDesc('If Obsidian app option "Editor > Behaviour > Indent using tabs" is false, space will be used to indent. If "Use hard spaces" is off, a normal space character will be used. Notice that with Markdown, repeated spaces will be rendered as one. Turn this option on to use hard spaces (U+00A0), which will not be truncated after Markdown render. Either way, indentation (leading spaces) will not show up in Reading View though')
+			.setDesc('If Obsidian app option "Editor > Behaviour > Indent using tabs" is false, space will be used to indent. If "Use hard spaces" is off, a normal space character will be used. Notice that with Markdown, repeated spaces will be rendered as one. Turn this option on to use hard spaces (U+00A0), which will not be truncated after Markdown render. Turning this on also allows you to indent stuff in the processed Markdown output.')
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.useHardSpace)
 				.onChange(async (value) => {
