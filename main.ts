@@ -1,12 +1,17 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 interface TabKeyPluginSettings {
-	indentsIfSelection: boolean
+	indentsIfSelection: boolean,
+	useHardSpace: boolean
 }
 
 const DEFAULT_SETTINGS: TabKeyPluginSettings = {
-	indentsIfSelection: true
+	indentsIfSelection: true,
+	useHardSpace: false // U+00A0 is technically not a space, let's not use it by default
 }
+
+let useTab: boolean = true; // default Obsidian settings
+let tabSize: number = 4;
 
 export default class TabKeyPlugin extends Plugin {
 	settings: TabKeyPluginSettings;
@@ -26,36 +31,24 @@ export default class TabKeyPlugin extends Plugin {
 				}
 			],
 			editorCallback: (editor) => {
-				let cursorPos = editor.getCursor();
 				let cursorFrom = editor.getCursor("from");
-				let selection = editor.getSelection();
-				if (selection != '' && !this.settings.indentsIfSelection) {
-					editor.replaceSelection('\t');
-					cursorPos = cursorFrom;
-				}
-				cursorPos.ch++;
-				cursorFrom.ch++;
-				if (selection == '' || !this.settings.indentsIfSelection) {
-					editor.setLine(cursorPos.line, editor.getLine(cursorPos.line).substring(0, cursorPos.ch - 1) + (selection == '' ? '\t' : '') + editor.getLine(cursorPos.line).substring(cursorPos.ch - 1));
-				}
-				else if (selection != '') {
-					for (let i = Math.min(cursorFrom.line, cursorPos.line); i <= Math.max(cursorFrom.line, cursorPos.line); i++)
-						editor.setLine(i, '\t' + editor.getLine(i));
-					editor.setSelection(cursorFrom, cursorPos);
-				}
-				if (!this.settings.indentsIfSelection && selection != '')
-					cursorPos.ch--;
-				if (selection == '' || !this.settings.indentsIfSelection)
-					editor.setCursor(cursorPos);
-			}
-		});
+				let cursorTo = editor.getCursor("to");
+				let cursorHead = editor.getCursor("head");
+				let cursorAnchor = editor.getCursor("anchor");
+				let somethingSelected = (cursorFrom.line != cursorTo.line || cursorFrom.ch != cursorTo.ch);
+				let tabStr = (useTab ? '\t' : (this.settings.useHardSpace ? ' ' : ' ').repeat(tabSize));
 
-		this.addCommand({
-			id: 'obs-tab-insert-four-hard-spaces',
-			name: 'Insert 4 hard spaces as tab',
-			hotkeys: [],
-			editorCallback: (editor) => {
-				editor.replaceSelection('    ');
+				if (somethingSelected && this.settings.indentsIfSelection) {
+					// indent lines
+					for (let line = cursorFrom.line; line <= cursorTo.line; line++)
+						editor.setLine(line, tabStr + editor.getLine(line));
+					editor.setSelection({ line: cursorAnchor.line, ch: cursorAnchor.ch + tabStr.length }, { line: cursorHead.line, ch: cursorHead.ch + tabStr.length });
+				}
+				else {
+					// insert tab
+					editor.replaceSelection(tabStr);
+					editor.setCursor({ line: cursorFrom.line, ch: cursorFrom.ch + tabStr.length });
+				}
 			}
 		});
 	}
@@ -65,6 +58,26 @@ export default class TabKeyPlugin extends Plugin {
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+
+		let path = app.vault.configDir + '/app.json';
+		console.log('obsidian-tab-key: Loading Obsidian app settings for tab behaviour configuration');
+
+		if (!(await app.vault.adapter.exists(path))) {
+			console.error('obsidian-tab-key: Unable to locate app settings, will use tab as tab');
+			return;
+		}
+
+		const data = await app.vault.adapter.read(path);
+		let appSettings = JSON.parse(data);
+		console.log(appSettings);
+
+		if (appSettings.useTab != undefined)
+			useTab = appSettings.useTab;
+		if (appSettings.tabSize != undefined)
+			tabSize = appSettings.tabSize;
+
+		console.log('obsidian-tab-key: Obsidian settings: useTab = ' + useTab);
+		console.log('                                     tabSize = ' + tabSize);
 	}
 
 	async saveSettings() {
@@ -95,5 +108,27 @@ class SettingTab extends PluginSettingTab {
 					this.plugin.settings.indentsIfSelection = value;
 					await this.plugin.saveSettings();
 				}));
+
+		new Setting(containerEl)
+			.setName('Use hard spaces')
+			.setDesc('If Obsidian app option "Editor > Behaviour > Indent using tabs" is false, space will be used to indent. If "Use hard spaces" is off, a normal space character will be used. Notice that with Markdown, repeated spaces will be rendered as one. Turn this option on to use hard spaces (U+00A0), which will not be truncated after Markdown render. Either way, indentation (leading spaces) will not show up in Reading View though')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.useHardSpace)
+				.onChange(async (value) => {
+					this.plugin.settings.useHardSpace = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Reload Obsidian app options')
+			.setDesc('You can decide whether to use tab or spaces for indentation. This setting is located at Options > Editor(the top-most one!) > Behaviour > Indent using tabs/Tab indent size. If it is incorrect, try updating the setting by changing the value and back.')
+			.addButton(button => button
+				.setIcon('refresh-cw')
+				.onClick(async () => {
+					await this.plugin.loadSettings();
+					new Notice('Indent using tabs: ' + useTab + '\nTab indent size: ' + tabSize);
+				}));
+
 	}
+
 }
