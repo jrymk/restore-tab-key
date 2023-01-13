@@ -18,7 +18,7 @@ export default class TabKeyPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'obs-tab-tab-key',
-			name: 'Tab key trigger',
+			name: '(internal) tab key trigger',
 			hotkeys: [
 				{
 					key: "Tab",
@@ -26,7 +26,6 @@ export default class TabKeyPlugin extends Plugin {
 				}
 			],
 			editorCallback: (editor) => {
-				console.log("TAB");
 				let cursorPos = editor.getCursor();
 				let cursorFrom = editor.getCursor("from");
 				let selection = editor.getSelection();
@@ -48,7 +47,16 @@ export default class TabKeyPlugin extends Plugin {
 					cursorPos.ch--;
 				if (selection == '' || !this.settings.indentsIfSelection)
 					editor.setCursor(cursorPos);
-			},
+			}
+		});
+
+		this.addCommand({
+			id: 'obs-tab-insert-four-hard-spaces',
+			name: 'Insert 4 hard spaces as tab',
+			hotkeys: [],
+			editorCallback: (editor) => {
+				editor.replaceSelection('    ');
+			}
 		});
 	}
 
@@ -74,13 +82,10 @@ class SettingTab extends PluginSettingTab {
 
 	display(): void {
 		const { containerEl } = this;
-
 		containerEl.empty();
-
 		containerEl.createEl('h2', { text: 'Obsidian Tab Key Plugin' });
 		containerEl.createEl('i', { text: 'Restore tab key behaviour: tab key inserts a tab, the way it should be.' });
 		containerEl.createEl('br');
-
 		new Setting(containerEl)
 			.setName('Indents when selection is not empty')
 			.setDesc('true(default): Select some text and press tab key will indent the selected lines. Same behaviour as most IDEs. \nfalse: Selection will be replaced with one tab')
