@@ -8,22 +8,17 @@ it solves the problem mentioned in this forum thread: https://forum.obsidian.md/
 ---
 
 ![](img_plugin-settings.png)\
-The tab key now works just like any other IDE. If you select some text and press tab, the selected lines will be indented. If nothing is selected, a tab will be inserted. There is also an option to insert tab when text is selected instead of indenting.
+The tab key now works just like any other IDE. If you select some text and press tab, the selected lines will be indented. If nothing is selected, a tab will be inserted. There is also an option to insert tab regardless.
 
 ### Indent using tabs
-Tabs/indentation respects Obsidian app options below. In addition, you can customize the number of spaces inserted for indentation instead of fixed to 4 spaces, as opposed to only change how the tab character is rendered.
-![](img_obsidian-app-settings.png)\
-[suggested by huyz](https://github.com/jrymk/obsidian-tab-key/issues/1)
+Select some text and press tab to indent, like just about any IDE.\
+The indent action is completely unaltered, you can change "Indent using tabs" and "Tab indent size" in Editor settings to change that behavior.
 
 ### Hard space
-Hard spaces (U+00A0) as tab allows you to insert wide blanks inside text and indent lines that will also show up in the rendered Markdown. Without using hard spaces, repeated spaces (and tabs) will be rendered as one single space. You can toggle whether to use hard space instead of regular spaces.
+Hard spaces (U+00A0) as tab allows you to insert wide blanks inside text. Without using hard spaces, repeated spaces (and tabs) will be rendered as one single space. You can toggle whether to use hard space instead of regular spaces.\
+You can insert hard spaces in the beginning of a line to act like indentation. You will have to move the cursor to the beginning and press tab to insert them though. **Indenting (select text and press tab) will not insert hard spaces.**
 
 live preview/source view: (Yes, with hard spaces as indentation it still turns into a code block. Aaargh!)\
 ![](img_hard-spaces.png)\
 after render (reading view):\
 ![](img_hard-spaces-rendered.png)
-
-<mark><b>This option is off by default. If you indent in code blocks, the code might fail to run or compile because it is not a space or a tab. Copying code from the note may become extremely annoying. Only use this if you are not going to edit code blocks.</b></mark>\
-*Hard spaces for tab is generally unwanted in code blocks (enclosed in backticks \`\`\`, not the ones created by indenting), no matter it is C++ code or Dataview plugin code.*
-
-TODO: Use regular space (or tab) for indentation and tabbing inside a code block regardless of hard space setting. Since spaces works correctly in code blocks, there's no reason not to. 
