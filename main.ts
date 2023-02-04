@@ -40,7 +40,7 @@ export default class TabKeyPlugin extends Plugin {
 		this.app.scope.register(null, null, (e: KeyboardEvent, t: KeymapContext) => {
 			const isHotkeyMatch = (hotkey: any, context: KeymapContext, id: string): boolean => {
 				const modifiers = hotkey.modifiers, key = hotkey.key;
-				if (modifiers !== null && context.modifiers !== null && (id.contains("completr-bypass") ? !context.modifiers.contains(modifiers) : modifiers !== context.modifiers))
+				if (modifiers !== null && context.modifiers !== null && modifiers !== context.modifiers)
 					return false;
 				return (!key || (key === context.vkey || !(!context.key || key.toLowerCase() !== context.key.toLowerCase())))
 			}
@@ -50,7 +50,6 @@ export default class TabKeyPlugin extends Plugin {
 			for (let bakedHotkeys = hotkeyManager.bakedHotkeys, bakedIds = hotkeyManager.bakedIds, r = 0; r < bakedHotkeys.length; r++) {
 				const hotkey = bakedHotkeys[r];
 				const id = bakedIds[r];
-				console.log(id);
 				if (isHotkeyMatch(hotkey, t, id)) {
 					const command = app.commands.findCommand(id);
 
