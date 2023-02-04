@@ -1,5 +1,5 @@
 {
-	"name": "obsidian-tab-key",
+	"name": "restore-tab-key",
 	"version": "1.4.0",
 	"description": "Restore tab key behaviour: tab key inserts a tab, the way it should be.",
 	"main": "main.js",
