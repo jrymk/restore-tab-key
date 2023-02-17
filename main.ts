@@ -22,10 +22,6 @@ export default class TabKeyPlugin extends Plugin {
 
 		this.addSettingTab(new SettingTab(this.app, this));
 
-		const app = this.app as any;
-		app.scope.keys = [];
-
-
 		this.addCommand({
 			id: 'obs-tab-tab-key',
 			name: '(internal) tab key trigger',
@@ -35,52 +31,28 @@ export default class TabKeyPlugin extends Plugin {
 					modifiers: []
 				}
 			],
-		});
+			editorCallback: (editor: Editor) => {
+				let cursorFrom = editor.getCursor("from");
+				let cursorTo = editor.getCursor("to");
+				let somethingSelected = (cursorFrom.line != cursorTo.line || cursorFrom.ch != cursorTo.ch);
+				if (somethingSelected && this.settings.indentsIfSelection) {
+					editor.exec('indentMore');
+				} else {
+					let cursorFrom = editor.getCursor("from");
+					let tabStr = (this.settings.useSpaces ? (this.settings.useHardSpace ? ' ' : ' ').repeat(this.settings.spacesCount) : '\t');
 
-		this.app.scope.register(null, null, (e: KeyboardEvent, t: KeymapContext) => {
-			const isHotkeyMatch = (hotkey: any, context: KeymapContext, id: string): boolean => {
-				const modifiers = hotkey.modifiers, key = hotkey.key;
-				if (modifiers !== null && context.modifiers !== null && modifiers !== context.modifiers)
-					return false;
-				return (!key || (key === context.vkey || !(!context.key || key.toLowerCase() !== context.key.toLowerCase())))
-			}
-
-			const hotkeyManager = app.hotkeyManager;
-			hotkeyManager.bake();
-			for (let bakedHotkeys = hotkeyManager.bakedHotkeys, bakedIds = hotkeyManager.bakedIds, r = 0; r < bakedHotkeys.length; r++) {
-				const hotkey = bakedHotkeys[r];
-				const id = bakedIds[r];
-				if (isHotkeyMatch(hotkey, t, id)) {
-					const command = app.commands.findCommand(id);
-
-					if (!command || (e.repeat && !command.repeatable)) {
-						continue;
-					} else if (id == 'obsidian-tab-key:obs-tab-tab-key') {
-						let view = this.app.workspace.getActiveViewOfType(MarkdownView);
-						if (!view)
+					if (!somethingSelected) {
+						if (/^((\t)*- )$|^((\t)*[0-9]+. )$/.test(editor.getLine(cursorFrom.line))) {
+							editor.exec('indentMore');
 							return;
-						let editor = view.editor;
-
-						let cursorFrom = editor.getCursor("from");
-						let cursorTo = editor.getCursor("to");
-						let somethingSelected = (cursorFrom.line != cursorTo.line || cursorFrom.ch != cursorTo.ch);
-						if (somethingSelected && this.settings.indentsIfSelection) {
-							return true;
-						} else {
-							let cursorFrom = editor.getCursor("from");
-							let tabStr = (this.settings.useSpaces ? (this.settings.useHardSpace ? ' ' : ' ').repeat(this.settings.spacesCount) : '\t');
-
-							// insert tab
-							editor.replaceSelection(tabStr);
-							editor.setCursor({ line: cursorFrom.line, ch: cursorFrom.ch + tabStr.length });
-							return false;
 						}
 					}
 
-					if (app.commands.executeCommandById(id))
-						return false;
+					// insert tab
+					editor.replaceSelection(tabStr);
+					editor.setCursor({ line: cursorFrom.line, ch: cursorFrom.ch + tabStr.length });
 				}
-			}
+			},
 		});
 	}
 
