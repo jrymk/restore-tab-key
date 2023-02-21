@@ -6,7 +6,8 @@ interface TabKeyPluginSettings {
 	useHardSpace: boolean,
 	spacesCount: number,
 	allowException: boolean,
-	exceptionRegex: string
+	exceptionRegex: string,
+	useAdvancedTables: boolean
 }
 
 const DEFAULT_SETTINGS: TabKeyPluginSettings = {
@@ -15,7 +16,8 @@ const DEFAULT_SETTINGS: TabKeyPluginSettings = {
 	useHardSpace: true, // U+00A0 is technically not a space, let's not use it by default
 	spacesCount: 4,
 	allowException: true,
-	exceptionRegex: "^((\t)*- )$|^((\t)*[0-9]+. )$"
+	exceptionRegex: "^((\t)*- )$|^((\t)*[0-9]+. )$",
+	useAdvancedTables: true
 }
 
 export default class TabKeyPlugin extends Plugin {
@@ -23,7 +25,6 @@ export default class TabKeyPlugin extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
-
 		this.addSettingTab(new SettingTab(this.app, this));
 
 		this.addCommand({
@@ -39,6 +40,13 @@ export default class TabKeyPlugin extends Plugin {
 				let cursorFrom = editor.getCursor("from");
 				let cursorTo = editor.getCursor("to");
 				let somethingSelected = (cursorFrom.line != cursorTo.line || cursorFrom.ch != cursorTo.ch);
+
+				if (this.settings.useAdvancedTables && RegExp(`^\\|`, 'u').test(editor.getLine(cursorFrom.line))) {
+					const app = this.app as any;
+					app.commands.executeCommandById('table-editor-obsidian:next-cell');
+					return;
+				}
+
 				if (somethingSelected && this.settings.indentsIfSelection) {
 					editor.exec('indentMore');
 				} else {
@@ -161,6 +169,16 @@ class SettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					}))
 		}
+
+		new Setting(containerEl)
+			.setName('Use with Advanced Tables')
+			.setDesc('Creates a new table or go to next cell when cursor is in a table')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.useAdvancedTables)
+				.onChange(async (value) => {
+					this.plugin.settings.useAdvancedTables = value;
+					await this.plugin.saveSettings();
+				}));
 	}
 
 }
