@@ -1,6 +1,8 @@
 # Restore Tab Key Plugin for Obsidian
 Restore tab key behaviour: tab key inserts a tab, the way it should be.
 
+![restoreTabKeyDemo](https://user-images.githubusercontent.com/39593345/220376206-de457056-2a52-48f9-ad57-e69fa42b909a.gif)
+
 To summarize, **this plugin make the tab key insert tabs**, **without affecting the ability to quickly indenting lines**, just like most IDEs. In addition, it allows you to insert hard spaces quickly if you want a wide blank inside text.
 
 it solves the problem mentioned in this forum thread: https://forum.obsidian.md/t/option-to-disable-tab-to-indent/40868
