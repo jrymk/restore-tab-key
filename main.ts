@@ -4,14 +4,18 @@ interface TabKeyPluginSettings {
 	indentsIfSelection: boolean,
 	useSpaces: boolean,
 	useHardSpace: boolean,
-	spacesCount: number
+	spacesCount: number,
+	allowException: boolean,
+	exceptionRegex: string
 }
 
 const DEFAULT_SETTINGS: TabKeyPluginSettings = {
 	indentsIfSelection: true,
 	useSpaces: false,
 	useHardSpace: true, // U+00A0 is technically not a space, let's not use it by default
-	spacesCount: 4
+	spacesCount: 4,
+	allowException: true,
+	exceptionRegex: "^((\t)*- )$|^((\t)*[0-9]+. )$"
 }
 
 export default class TabKeyPlugin extends Plugin {
@@ -41,8 +45,8 @@ export default class TabKeyPlugin extends Plugin {
 					let cursorFrom = editor.getCursor("from");
 					let tabStr = (this.settings.useSpaces ? (this.settings.useHardSpace ? ' ' : ' ').repeat(this.settings.spacesCount) : '\t');
 
-					if (!somethingSelected) {
-						if (/^((\t)*- )$|^((\t)*[0-9]+. )$/.test(editor.getLine(cursorFrom.line))) {
+					if (!somethingSelected && this.settings.allowException) {
+						if (RegExp(this.settings.exceptionRegex).test(editor.getLine(cursorFrom.line))) {
 							editor.exec('indentMore');
 							return;
 						}
@@ -127,6 +131,36 @@ class SettingTab extends PluginSettingTab {
 					this.plugin.settings.indentsIfSelection = value;
 					await this.plugin.saveSettings();
 				}));
+
+		new Setting(containerEl)
+			.setName('Allow exceptions for indenting')
+			.setDesc('Indent line even when the selection is empty when the line matches the regex')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.allowException)
+				.onChange(async (value) => {
+					this.plugin.settings.allowException = value;
+					this.display(); // refresh display
+					await this.plugin.saveSettings();
+				}));
+		if (this.plugin.settings.allowException) {
+			new Setting(containerEl)
+				.setName('Exception regex')
+				.setDesc('Default: Indents regardless in lists (zero or more tabs, followed by - or number. and then a space)')
+				.addText(textbox => textbox
+					.setValue(this.plugin.settings.exceptionRegex)
+					.setPlaceholder('Regex')
+					.onChange(async (value) => {
+						this.plugin.settings.exceptionRegex = value;
+						await this.plugin.saveSettings();
+					}))
+				.addExtraButton(button => button
+					.setIcon('rotate-ccw')
+					.onClick(async () => {
+						this.plugin.settings.exceptionRegex = '^((\t)*- )$|^((\t)*[0-9]+. )$'
+						this.display();
+						await this.plugin.saveSettings();
+					}))
+		}
 	}
 
 }
