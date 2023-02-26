@@ -153,7 +153,7 @@ class SettingTab extends PluginSettingTab {
 		if (this.plugin.settings.allowException) {
 			new Setting(containerEl)
 				.setName('Exception regex')
-				.setDesc('Default: Indents regardless in lists (zero or more tabs, followed by - or number. and then a space)')
+				.setDesc('Default: Indents regardless in lists (zero or more whitespaces, followed by - or number. then optionally a checkbox and then a space)')
 				.addText(textbox => textbox
 					.setValue(this.plugin.settings.exceptionRegex)
 					.setPlaceholder('Regex')
@@ -164,7 +164,7 @@ class SettingTab extends PluginSettingTab {
 				.addExtraButton(button => button
 					.setIcon('rotate-ccw')
 					.onClick(async () => {
-						this.plugin.settings.exceptionRegex = '^((\t)*- )$|^((\t)*[0-9]+. )$'
+						this.plugin.settings.exceptionRegex = '^\s*(-|\d+\.)( \[ \])?\s*$'
 						this.display();
 						await this.plugin.saveSettings();
 					}))
