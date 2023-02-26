@@ -16,7 +16,7 @@ const DEFAULT_SETTINGS: TabKeyPluginSettings = {
 	useHardSpace: true, // U+00A0 is technically not a space, let's not use it by default
 	spacesCount: 4,
 	allowException: true,
-	exceptionRegex: "^((\t)*- )$|^((\t)*[0-9]+. )$",
+	exceptionRegex: "^[\s ]*(-|\d+\.)( \[ \])?\s*$",
 	useAdvancedTables: true
 }
 
@@ -164,7 +164,7 @@ class SettingTab extends PluginSettingTab {
 				.addExtraButton(button => button
 					.setIcon('rotate-ccw')
 					.onClick(async () => {
-						this.plugin.settings.exceptionRegex = '^\s*(-|\d+\.)( \[ \])?\s*$'
+						this.plugin.settings.exceptionRegex = '^[\s ]*(-|\d+\.)( \[ \])?\s*$'
 						this.display();
 						await this.plugin.saveSettings();
 					}))
