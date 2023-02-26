@@ -16,7 +16,7 @@ const DEFAULT_SETTINGS: TabKeyPluginSettings = {
 	useHardSpace: true, // U+00A0 is technically not a space, let's not use it by default
 	spacesCount: 4,
 	allowException: true,
-	exceptionRegex: "^[\s ]*(-|\d+\.)( \[ \])?\s*$",
+	exceptionRegex: "^[\\s\u{00A0}]*(-|\\d+\\.)( \\[ \\])?\\s*$",
 	useAdvancedTables: true
 }
 
@@ -54,7 +54,7 @@ export default class TabKeyPlugin extends Plugin {
 					let tabStr = (this.settings.useSpaces ? (this.settings.useHardSpace ? ' ' : ' ').repeat(this.settings.spacesCount) : '\t');
 
 					if (!somethingSelected && this.settings.allowException) {
-						if (RegExp(this.settings.exceptionRegex).test(editor.getLine(cursorFrom.line))) {
+						if (RegExp(this.settings.exceptionRegex, 'u').test(editor.getLine(cursorFrom.line))) {
 							editor.exec('indentMore');
 							return;
 						}
@@ -164,7 +164,7 @@ class SettingTab extends PluginSettingTab {
 				.addExtraButton(button => button
 					.setIcon('rotate-ccw')
 					.onClick(async () => {
-						this.plugin.settings.exceptionRegex = '^[\s ]*(-|\d+\.)( \[ \])?\s*$'
+						this.plugin.settings.exceptionRegex = '^[\\s\u{00A0}]*(-|\\d+\\.)( \\[ \\])?\\s*$'
 						this.display();
 						await this.plugin.saveSettings();
 					}))
