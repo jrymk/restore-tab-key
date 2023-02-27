@@ -7,7 +7,8 @@ interface TabKeyPluginSettings {
 	spacesCount: number,
 	allowException: boolean,
 	exceptionRegex: string,
-	useAdvancedTables: boolean
+	useAdvancedTables: boolean,
+	useOutlinerBetterTab: boolean
 }
 
 const DEFAULT_SETTINGS: TabKeyPluginSettings = {
@@ -17,7 +18,8 @@ const DEFAULT_SETTINGS: TabKeyPluginSettings = {
 	spacesCount: 4,
 	allowException: true,
 	exceptionRegex: "^[\\s\u{00A0}]*(-|\\d+\\.)( \\[ \\])?\\s*$",
-	useAdvancedTables: true
+	useAdvancedTables: true,
+	useOutlinerBetterTab: true
 }
 
 export default class TabKeyPlugin extends Plugin {
@@ -40,9 +42,18 @@ export default class TabKeyPlugin extends Plugin {
 				let cursorFrom = editor.getCursor("from");
 				let cursorTo = editor.getCursor("to");
 				let somethingSelected = (cursorFrom.line != cursorTo.line || cursorFrom.ch != cursorTo.ch);
+				const app = this.app as any;
+
+				if (this.settings.useOutlinerBetterTab) {
+					let prevLine = editor.getLine(cursorFrom.line);
+					app.commands.executeCommandById('obsidian-outliner:indent-list')
+					if (prevLine != editor.getLine(cursorFrom.line)) {
+						// outliner probably did its thing
+						return;
+					}
+				}
 
 				if (this.settings.useAdvancedTables && RegExp(`^\\|`, 'u').test(editor.getLine(cursorFrom.line))) {
-					const app = this.app as any;
 					app.commands.executeCommandById('table-editor-obsidian:next-cell');
 					return;
 				}
@@ -91,8 +102,9 @@ class SettingTab extends PluginSettingTab {
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
-		containerEl.createEl('h2', { text: 'Obsidian Tab Key Plugin' });
+		containerEl.createEl('h5', { text: 'Obsidian Tab Key Plugin' });
 		containerEl.createEl('i', { text: 'Restore tab key behaviour: tab key inserts a tab, the way it should be.' });
+		containerEl.createEl('br');
 		containerEl.createEl('br');
 
 		new Setting(containerEl)
@@ -170,13 +182,25 @@ class SettingTab extends PluginSettingTab {
 					}))
 		}
 
+		containerEl.createEl('h2', { text: 'Plugin Compatibility' });
+
 		new Setting(containerEl)
-			.setName('Use with Advanced Tables')
+			.setName('Use with Advanced Tables plugin')
 			.setDesc('Creates a new table or go to next cell when cursor is in a table')
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.useAdvancedTables)
 				.onChange(async (value) => {
 					this.plugin.settings.useAdvancedTables = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Use with Obsidian Outliner plugin')
+			.setDesc('Try execute Outliner indent operation when tab is pressed, if nothing changed, use default Restore Tab Key plugin behavior')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.useOutlinerBetterTab)
+				.onChange(async (value) => {
+					this.plugin.settings.useOutlinerBetterTab = value;
 					await this.plugin.saveSettings();
 				}));
 	}
