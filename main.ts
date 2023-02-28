@@ -44,7 +44,7 @@ export default class TabKeyPlugin extends Plugin {
 				let somethingSelected = (cursorFrom.line != cursorTo.line || cursorFrom.ch != cursorTo.ch);
 				const app = this.app as any;
 
-				if (this.settings.useOutlinerBetterTab) {
+				if (this.settings.useOutlinerBetterTab && RegExp("^[\\s]*(-|\\d+\\.)", 'u').test(editor.getLine(cursorFrom.line))) {
 					let prevLine = editor.getLine(cursorFrom.line);
 					app.commands.executeCommandById('obsidian-outliner:indent-list')
 					if (prevLine != editor.getLine(cursorFrom.line)) {
@@ -165,7 +165,7 @@ class SettingTab extends PluginSettingTab {
 		if (this.plugin.settings.allowException) {
 			new Setting(containerEl)
 				.setName('Exception regex')
-				.setDesc('Default: Indents regardless in lists (zero or more whitespaces, followed by - or number. then optionally a checkbox and then a space)')
+				.setDesc('Default: Indents regardless in lists (zero or more whitespaces, followed by - or number. then optionally a checkbox and then a space). Remove the trailing $ to enable indentation in non-empty lists')
 				.addText(textbox => textbox
 					.setValue(this.plugin.settings.exceptionRegex)
 					.setPlaceholder('Regex')
