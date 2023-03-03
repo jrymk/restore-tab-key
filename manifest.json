@@ -1,7 +1,7 @@
 {
 	"id": "restore-tab-key",
 	"name": "Restore Tab Key",
-	"version": "1.9.1",
+	"version": "1.10.0",
 	"minAppVersion": "0.15.0",
 	"description": "Restore tab key behaviour: tab key inserts a tab, the way it should be.",
 	"author": "jerrymk",
