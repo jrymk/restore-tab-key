@@ -1,4 +1,6 @@
 import { App, Editor, MarkdownView, KeymapContext, Hotkey, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { Extension, Prec } from '@codemirror/state';
+import { EditorView, keymap } from '@codemirror/view';
 
 interface TabKeyPluginSettings {
 	indentsIfSelection: boolean,
@@ -29,54 +31,62 @@ export default class TabKeyPlugin extends Plugin {
 		await this.loadSettings();
 		this.addSettingTab(new SettingTab(this.app, this));
 
-		this.addCommand({
-			id: 'obs-tab-tab-key',
-			name: '(internal) tab key trigger',
-			hotkeys: [
-				{
-					key: "Tab",
-					modifiers: []
-				}
-			],
-			editorCallback: (editor: Editor) => {
-				let cursorFrom = editor.getCursor("from");
-				let cursorTo = editor.getCursor("to");
-				let somethingSelected = (cursorFrom.line != cursorTo.line || cursorFrom.ch != cursorTo.ch);
-				const app = this.app as any;
+		this.registerEditorExtension(Prec.highest(keymap.of(
+			[{
+				key: 'Tab',
+				run: (): boolean => {
+					const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+					if (!view)
+						return false;
+					let editor = view.editor;
 
-				if (this.settings.useOutlinerBetterTab && RegExp("^[\\s]*(-|\\d+\\.)", 'u').test(editor.getLine(cursorFrom.line))) {
-					let prevLine = editor.getLine(cursorFrom.line);
-					app.commands.executeCommandById('obsidian-outliner:indent-list')
-					if (prevLine != editor.getLine(cursorFrom.line)) {
-						// outliner probably did its thing
-						return;
-					}
-				}
-
-				if (this.settings.useAdvancedTables && RegExp(`^\\|`, 'u').test(editor.getLine(cursorFrom.line))) {
-					app.commands.executeCommandById('table-editor-obsidian:next-cell');
-					return;
-				}
-
-				if (somethingSelected && this.settings.indentsIfSelection) {
-					editor.exec('indentMore');
-				} else {
 					let cursorFrom = editor.getCursor("from");
-					let tabStr = (this.settings.useSpaces ? (this.settings.useHardSpace ? ' ' : ' ').repeat(this.settings.spacesCount) : '\t');
+					let cursorTo = editor.getCursor("to");
+					let somethingSelected = (cursorFrom.line != cursorTo.line || cursorFrom.ch != cursorTo.ch);
+					const app = this.app as any;
 
-					if (!somethingSelected && this.settings.allowException) {
-						if (RegExp(this.settings.exceptionRegex, 'u').test(editor.getLine(cursorFrom.line))) {
-							editor.exec('indentMore');
-							return;
+					if (this.settings.useOutlinerBetterTab && RegExp("^[\\s]*(-|\\d+\\.)", 'u').test(editor.getLine(cursorFrom.line))) {
+						let prevLine = editor.getLine(cursorFrom.line);
+						app.commands.executeCommandById('obsidian-outliner:indent-list')
+						if (prevLine != editor.getLine(cursorFrom.line)) {
+							// outliner probably did its thing
+							return true;
 						}
 					}
 
-					// insert tab
-					editor.replaceSelection(tabStr);
-					editor.setCursor({ line: cursorFrom.line, ch: cursorFrom.ch + tabStr.length });
-				}
-			},
-		});
+					if (this.settings.useAdvancedTables && RegExp(`^\\|`, 'u').test(editor.getLine(cursorFrom.line))) {
+						app.commands.executeCommandById('table-editor-obsidian:next-cell');
+						return true;
+					}
+
+					if (somethingSelected && this.settings.indentsIfSelection) {
+						editor.exec('indentMore');
+					} else {
+						let cursorFrom = editor.getCursor("from");
+						let tabStr = (this.settings.useSpaces ? (this.settings.useHardSpace ? ' ' : ' ').repeat(this.settings.spacesCount) : '\t');
+
+						if (!somethingSelected && this.settings.allowException) {
+							if (RegExp(this.settings.exceptionRegex, 'u').test(editor.getLine(cursorFrom.line))) {
+								editor.exec('indentMore');
+								return true;
+							}
+						}
+
+						// insert tab
+						editor.replaceSelection(tabStr);
+						editor.setCursor({ line: cursorFrom.line, ch: cursorFrom.ch + tabStr.length });
+					}
+					return true;
+				},
+				preventDefault: true,
+			}])
+		));
+	}
+
+	createKeymapRunCallback() {
+		return (view: EditorView): boolean => {
+			return true;
+		};
 	}
 
 	onunload() {
