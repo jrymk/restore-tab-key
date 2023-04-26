@@ -4,6 +4,7 @@ import { EditorView, keymap } from '@codemirror/view';
 
 interface TabKeyPluginSettings {
 	indentsIfSelection: boolean,
+	indentsIfSelectionOnlyForMultipleLines: boolean,
 	useSpaces: boolean,
 	alignSpaces: boolean,
 	useHardSpace: boolean,
@@ -16,6 +17,7 @@ interface TabKeyPluginSettings {
 
 const DEFAULT_SETTINGS: TabKeyPluginSettings = {
 	indentsIfSelection: true,
+	indentsIfSelectionOnlyForMultipleLines: true,
 	useSpaces: false,
 	alignSpaces: false,
 	useHardSpace: true, // U+00A0 is technically not a space, let's not use it by default
@@ -61,7 +63,7 @@ export default class TabKeyPlugin extends Plugin {
 						return true;
 					}
 
-					if (somethingSelected && this.settings.indentsIfSelection) {
+					if (somethingSelected && this.settings.indentsIfSelection && (!this.settings.indentsIfSelectionOnlyForMultipleLines || (cursorTo.line != cursorFrom.line))) {
 						editor.exec('indentMore');
 					} else {
 						let cursorFrom = editor.getCursor("from");
@@ -177,6 +179,18 @@ class SettingTab extends PluginSettingTab {
 					this.plugin.settings.indentsIfSelection = value;
 					await this.plugin.saveSettings();
 				}));
+
+		if (this.plugin.settings.indentsIfSelection) {
+			new Setting(containerEl)
+				.setName('Indents only when selection contains multiple lines')
+				.setDesc('true(default): If the selection lies within one line, a tab (or spaces) will replace the selection instead')
+				.addToggle(toggle => toggle
+					.setValue(this.plugin.settings.indentsIfSelectionOnlyForMultipleLines)
+					.onChange(async (value) => {
+						this.plugin.settings.indentsIfSelectionOnlyForMultipleLines = value;
+						await this.plugin.saveSettings();
+					}));
+		}
 
 		new Setting(containerEl)
 			.setName('Allow exceptions for indenting')
