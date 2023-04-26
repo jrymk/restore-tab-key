@@ -5,6 +5,7 @@ import { EditorView, keymap } from '@codemirror/view';
 interface TabKeyPluginSettings {
 	indentsIfSelection: boolean,
 	useSpaces: boolean,
+	alignSpaces: boolean,
 	useHardSpace: boolean,
 	spacesCount: number,
 	allowException: boolean,
@@ -16,6 +17,7 @@ interface TabKeyPluginSettings {
 const DEFAULT_SETTINGS: TabKeyPluginSettings = {
 	indentsIfSelection: true,
 	useSpaces: false,
+	alignSpaces: false,
 	useHardSpace: true, // U+00A0 is technically not a space, let's not use it by default
 	spacesCount: 4,
 	allowException: true,
@@ -63,7 +65,7 @@ export default class TabKeyPlugin extends Plugin {
 						editor.exec('indentMore');
 					} else {
 						let cursorFrom = editor.getCursor("from");
-						let tabStr = (this.settings.useSpaces ? (this.settings.useHardSpace ? ' ' : ' ').repeat(this.settings.spacesCount) : '\t');
+						let tabStr = (this.settings.useSpaces ? (this.settings.useHardSpace ? ' ' : ' ').repeat(this.settings.alignSpaces ? (this.settings.spacesCount - cursorFrom.ch % this.settings.spacesCount) :(this.settings.spacesCount)) : '\t');
 
 						if (!somethingSelected && this.settings.allowException) {
 							if (RegExp(this.settings.exceptionRegex, 'u').test(editor.getLine(cursorFrom.line))) {
@@ -117,6 +119,8 @@ class SettingTab extends PluginSettingTab {
 		containerEl.createEl('br');
 		containerEl.createEl('br');
 
+		containerEl.createEl('h2', { text: 'Tab or Space Settings' });
+		
 		new Setting(containerEl)
 			.setName('Use spaces instead of tab')
 			.setDesc('false(default): Insert tab (\\t) when tab key is pressed. true: Insert spaces (    ) when tab key is pressed.')
@@ -127,7 +131,7 @@ class SettingTab extends PluginSettingTab {
 					this.display(); // refresh display
 					await this.plugin.saveSettings();
 				}));
-
+		
 		if (this.plugin.settings.useSpaces) {
 			new Setting(containerEl)
 				.setName('Use hard spaces')
@@ -150,7 +154,19 @@ class SettingTab extends PluginSettingTab {
 						this.plugin.settings.spacesCount = value;
 						await this.plugin.saveSettings();
 					}));
+
+			new Setting(containerEl)
+				.setName('Align spaces (just like how tabs behave)')
+				.setDesc('At space count of 4, pressing tab after "abc" inserts one space, "abcde" inserts 3, so the end position after pressing tab is always an integer multiple of the space count.')
+				.addToggle(toggle => toggle
+					.setValue(this.plugin.settings.alignSpaces)
+					.onChange(async (value) => {
+						this.plugin.settings.alignSpaces = value;
+						await this.plugin.saveSettings();
+					}));
 		}
+
+		containerEl.createEl('h2', { text: 'Tab Key Behaviour' });
 
 		new Setting(containerEl)
 			.setName('Indents when selection is not empty')
