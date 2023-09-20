@@ -35,10 +35,14 @@ export default class TabKeyPlugin extends Plugin {
 		await this.loadSettings();
 		this.addSettingTab(new SettingTab(this.app, this));
 
+		let outlinerIndenting = false;
+
 		this.registerEditorExtension(Prec.highest(keymap.of(
 			[{
 				key: 'Tab',
 				run: (): boolean => {
+					if (outlinerIndenting)
+						return false;
 					const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 					if (!view)
 						return false;
@@ -51,7 +55,9 @@ export default class TabKeyPlugin extends Plugin {
 
 					if (this.settings.useOutlinerBetterTab && RegExp("^[\\s]*(-|\\d+\\.)", 'u').test(editor.getLine(cursorFrom.line))) {
 						let prevLine = editor.getLine(cursorFrom.line);
+						outlinerIndenting = true;
 						app.commands.executeCommandById('obsidian-outliner:indent-list')
+						outlinerIndenting = false;
 						if (prevLine != editor.getLine(cursorFrom.line)) {
 							// outliner probably did its thing
 							return true;
@@ -67,7 +73,7 @@ export default class TabKeyPlugin extends Plugin {
 						editor.exec('indentMore');
 					} else {
 						let cursorFrom = editor.getCursor("from");
-						let tabStr = (this.settings.useSpaces ? (this.settings.useHardSpace ? ' ' : ' ').repeat(this.settings.alignSpaces ? (this.settings.spacesCount - cursorFrom.ch % this.settings.spacesCount) :(this.settings.spacesCount)) : '\t');
+						let tabStr = (this.settings.useSpaces ? (this.settings.useHardSpace ? ' ' : ' ').repeat(this.settings.alignSpaces ? (this.settings.spacesCount - cursorFrom.ch % this.settings.spacesCount) : (this.settings.spacesCount)) : '\t');
 
 						if (!somethingSelected && this.settings.allowException) {
 							if (RegExp(this.settings.exceptionRegex, 'u').test(editor.getLine(cursorFrom.line))) {
@@ -122,7 +128,7 @@ class SettingTab extends PluginSettingTab {
 		containerEl.createEl('br');
 
 		containerEl.createEl('h2', { text: 'Tab or Space Settings' });
-		
+
 		new Setting(containerEl)
 			.setName('Use spaces instead of tab')
 			.setDesc('false(default): Insert tab (\\t) when tab key is pressed. true: Insert spaces (    ) when tab key is pressed.')
@@ -133,7 +139,7 @@ class SettingTab extends PluginSettingTab {
 					this.display(); // refresh display
 					await this.plugin.saveSettings();
 				}));
-		
+
 		if (this.plugin.settings.useSpaces) {
 			new Setting(containerEl)
 				.setName('Use hard spaces')
