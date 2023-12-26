@@ -163,7 +163,7 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 	},
 	customHotkeyDesc: {
 		"en-US":
-			'Tab doesn\'t work for you? Try "Ctrl-Alt-Space", or "Shift-F6"?',
+			'Tab doesn\'t work for you? Try "Ctrl-Alt-Space", or "Shift-F6"? (Reload required. Go to "Community plugins" and disable then enable this plugin will do)',
 		"zh-CN":
 			'不想用 Tab 键？试试 "Ctrl-Alt-Space" 或者 "Shift-F6"？（需要重新启动插件，到「第三方插件」关闭此插件后再开启即可）',
 		"zh-TW":
