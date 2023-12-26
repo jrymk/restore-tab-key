@@ -3,7 +3,7 @@
 	"name": "Restore Tab Key",
 	"version": "1.13.0",
 	"minAppVersion": "0.15.0",
-	"description": "Restore tab key behaviour: tab key inserts a tab, the way it should be.",
+	"description": "Restore tab key behaviour: tab key inserts a tab character, the way it should be.",
 	"author": "jerrymk",
 	"authorUrl": "https://github.com/jrymk",
 	"isDesktopOnly": false
