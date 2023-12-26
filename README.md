@@ -49,4 +49,4 @@ after render (reading view):\
 ### Also comes in Chinese
 ![image](https://github.com/jrymk/restore-tab-key/assets/39593345/40be7ed3-cc75-46bc-a6b5-afb5aaef609a)
 
-設定頁可選擇顯示語言
+设定页可选择显示语言，部分翻译内容和中国大陆在地化参考了 ACodeHX 的 fork。
