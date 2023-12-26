@@ -22,12 +22,18 @@ Shift + Tab reduces indentation on the selected lines.
 
 ## Settings
 
-![](img_plugin-settings.png)\
+![image](https://github.com/jrymk/restore-tab-key/assets/39593345/c9ccf396-ca8e-4c03-9eb8-a0f5e4909a92)
+![image](https://github.com/jrymk/restore-tab-key/assets/39593345/f8e843c5-af9e-4673-be76-f39393194b0f)
+
 The tab key now works just like any other IDE. If you select some text and press tab, the selected lines will be indented. If nothing is selected, a tab will be inserted. There is also an option to insert tab regardless.
+
+---
 
 ### Indent using tabs
 Select some text and press tab to indent, like just about any IDE.\
 The indent action is completely unaltered (native `indentMore` command), you can change "Indent using tabs" and "Tab indent size" in Editor settings to change that behavior.
+
+---
 
 ### Hard space
 Hard spaces (U+00A0) as tab allows you to insert wide blanks inside text. Without using hard spaces, repeated spaces (and tabs) will be rendered as one single space. You can toggle whether to use hard space instead of regular spaces.\
@@ -37,3 +43,10 @@ live preview/source view: (Yes, with hard spaces as indentation it still turns i
 ![](img_hard-spaces.png)\
 after render (reading view):\
 ![](img_hard-spaces-rendered.png)
+
+---
+
+### Also comes in Chinese
+![image](https://github.com/jrymk/restore-tab-key/assets/39593345/40be7ed3-cc75-46bc-a6b5-afb5aaef609a)
+
+設定頁可選擇顯示語言
