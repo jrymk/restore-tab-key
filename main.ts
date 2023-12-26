@@ -22,13 +22,13 @@ const DEFAULT_SETTINGS: TabKeyPluginSettings = {
 	indentsIfSelection: true,
 	indentsIfSelectionOnlyForMultipleLines: true,
 	useSpaces: false,
-	alignSpaces: false,
-	useHardSpace: true, // U+00A0 is technically not a space, let's not use it by default
+	alignSpaces: true,
+	useHardSpace: false, // U+00A0 is technically not a space, let's not use it by default
 	spacesCount: 4,
 	allowException: true,
 	exceptionRegex: "^[\\s\u{00A0}]*(-|\\d+\\.)( \\[ \\])?\\s*$",
-	useAdvancedTables: true,
-	useOutlinerBetterTab: true,
+	useAdvancedTables: false,
+	useOutlinerBetterTab: false,
 	hotkey: "Tab",
 	language: "en-US",
 };
