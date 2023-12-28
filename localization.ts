@@ -123,9 +123,22 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 			"預設：在該行為清單列表項目時（零個或以上個空白，加上一個數字，也許再加上一個複選框，然後再一個空白）。刪除結尾的 $ 符號，可以讓此表達式匹配非空白的清單項目。",
 	},
 	pluginCompatibility: {
-		"en-US": "Plugin Compatibility",
-		"zh-CN": "插件兼容性",
-		"zh-TW": "插件兼容性",
+		"en-US": "Compatibility",
+		"zh-CN": "兼容性",
+		"zh-TW": "兼容性",
+	},
+	obsidianTableEditor: {
+		"en-US": "Use with the native Obsidian Table Editor",
+		"zh-CN": "和黑曜石原生表格编辑器一起使用",
+		"zh-TW": "和黑曜石原生表格編輯器一起使用",
+	},
+	obsidianTableEditorDesc: {
+		"en-US":
+			'Do not capture tab key if cursor is on an Obsidian table editor in "Live Preview" mode, so you can go to next cell with the tab key. This setting does not apply to "Source" mode. Also, it is recommended to uninstall/unbind tab in Advanced Tables plugin if you mainly work in live preview mode, because Advanced Tables currently doesn\'t work as well as the native editor does.',
+		"zh-CN":
+			"在预览模式下不对 Tab 键进行处理，交给黑曜石原生表格编辑器。若你常在预览模式下工作，我建议将 Advanced Tables plugin 高级表格插件停用或将其 Tab 键解绑，因为它没有比表格编辑器好用。",
+		"zh-TW":
+			"在預覽模式下不對 Tab 鍵進行處理，交給黑曜石原生表格編輯器。若你常在預覽模式下工作，我建議將 Advanced Tables plugin 進階表格插件停用或將其 Tab 鍵解綁，因為它沒有比表格編輯器好用。",
 	},
 	advancedTables: {
 		"en-US": "Use with Advanced Tables plugin",
@@ -143,16 +156,15 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 	outliner: {
 		"en-US": "Use with Obsidian Outliner plugin",
 		"zh-CN": "和 Obsidian Outliner plugin 大纲插件一起使用",
-		"zh-TW":
-			"和 Obsidian Outliner plugin 大綱插件一起使用。基本上當按下 Tab 鍵，且沒有文字被選取，且游標在清單列表上的話，會直接將該清單列表等級",
+		"zh-TW": "和 Obsidian Outliner plugin 大綱插件一起使用",
 	},
 	outlinerDesc: {
 		"en-US":
 			"Try execute Outliner indent operation when tab is pressed, if nothing changed, use default Restore Tab Key plugin behavior. Basically, if the selection is empty and cursor is on a list item, it will indent the item if Tab is pressed, unless it can't, in that case a tab will be inserted. A list item can't be indented if it is already one level deeper than the item above. This plugin can also indent everything under the selected item recursively, and relabel numbered lists.",
 		"zh-CN":
-			"尝试执行 Outliner 的缩排指令，如果没有任何更改则套用本插件的设定",
+			"尝试执行 Outliner 的缩排指令，如果没有任何更改则套用本插件的设定。基本上当按下 Tab 键，且没有文字被选取，且光标在清单列表上的话，会直接将该清单列表等级",
 		"zh-TW":
-			"嘗試執行 Outliner 的縮排指令，如果沒有任何變化的話則套用本插件的設定",
+			"嘗試執行 Outliner 的縮排指令，如果沒有任何變化的話則套用本插件的設定。基本上當按下 Tab 鍵，且沒有文字被選取，且游標在清單列表上的話，會直接將該清單列表等級",
 	},
 	additional: {
 		"en-US": "Additional Options",

@@ -12,6 +12,7 @@ interface TabKeyPluginSettings {
 	spacesCount: number;
 	allowException: boolean;
 	exceptionRegex: string;
+	obsidianTableEditor: boolean;
 	useAdvancedTables: boolean;
 	useOutlinerBetterTab: boolean;
 	hotkey: string;
@@ -29,6 +30,7 @@ const DEFAULT_SETTINGS: TabKeyPluginSettings = {
 	allowException: true,
 	exceptionRegex: "^[\\s\u{00A0}]*(-|\\d+\\.)( \\[ \\])?\\s*$",
 	useAdvancedTables: false,
+	obsidianTableEditor: true,
 	useOutlinerBetterTab: true,
 	hotkey: "Tab",
 	language: "en-US",
@@ -75,6 +77,8 @@ export default class TabKeyPlugin extends Plugin {
 							}
 							const editor = view.editor;
 
+							const sourceMode: boolean = view.getState().source;
+
 							const cursorFrom = editor.getCursor("from");
 							const cursorTo = editor.getCursor("to");
 							const somethingSelected =
@@ -109,19 +113,43 @@ export default class TabKeyPlugin extends Plugin {
 							}
 
 							if (
-								this.settings.useAdvancedTables &&
 								RegExp(`^\\|`, "u").test(
 									editor.getLine(cursorFrom.line)
 								)
 							) {
-								app.commands.executeCommandById(
-									"table-editor-obsidian:next-cell"
-								);
-								if (this.settings.developerMode)
-									console.log(
-										"[restore tab] Did not execute: Handled by Advanced Table"
-									);
-								return true;
+								if (!sourceMode) {
+									// live preview mode
+									if (this.settings.developerMode)
+										console.log(
+											"[restore tab] Table environment in Live Preview mode"
+										);
+
+									if (this.settings.obsidianTableEditor) {
+										// leave the editor alone
+										if (this.settings.developerMode)
+											console.log(
+												"[restore tab] Did not execute: Handled by Obsidian Table Editor"
+											);
+										return false;
+									}
+								} else {
+									// source mode
+									if (this.settings.developerMode)
+										console.log(
+											"[restore tab] Table environment in Source mode"
+										);
+
+									if (this.settings.useAdvancedTables) {
+										app.commands.executeCommandById(
+											"table-editor-obsidian:next-cell"
+										);
+										if (this.settings.developerMode)
+											console.log(
+												"[restore tab] Did not execute: Handled by Advanced Table"
+											);
+										return true;
+									}
+								}
 							}
 
 							if (
@@ -435,6 +463,26 @@ class SettingTab extends PluginSettingTab {
 				this.plugin.settings.language
 			],
 		});
+
+		new Setting(containerEl)
+			.setName(
+				localization["obsidianTableEditor"][
+					this.plugin.settings.language
+				]
+			)
+			.setDesc(
+				localization["obsidianTableEditorDesc"][
+					this.plugin.settings.language
+				]
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.obsidianTableEditor)
+					.onChange(async (value) => {
+						this.plugin.settings.obsidianTableEditor = value;
+						await this.plugin.saveSettings();
+					})
+			);
 
 		if (this.plugin.settings.developerMode) {
 			new Setting(containerEl)
