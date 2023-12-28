@@ -1,9 +1,16 @@
 # Restore Tab Key Plugin for Obsidian
 Restore tab key behaviour: tab key inserts a tab, the way it should be.
 
-![restoreTabKeyDemo](https://user-images.githubusercontent.com/39593345/220376206-de457056-2a52-48f9-ad57-e69fa42b909a.gif)
+#### Before
+![before](https://github.com/jrymk/restore-tab-key/assets/39593345/1c862e1d-b958-4a4e-a316-ce106676b2e8)
+#### After
+![after](https://github.com/jrymk/restore-tab-key/assets/39593345/96c4dc5f-8396-46e3-af56-5b58f308a386)
+
+---
 
 To summarize, **this plugin make the tab key insert tabs**, **without affecting the ability to quickly indenting lines**, just like most IDEs. In addition, it allows you to insert hard spaces quickly if you want a wide blank inside text.
+
+![restoreTabKeyDemo](https://user-images.githubusercontent.com/39593345/220376206-de457056-2a52-48f9-ad57-e69fa42b909a.gif)
 
 it solves the problem mentioned in this forum thread: https://forum.obsidian.md/t/option-to-disable-tab-to-indent/40868
 
@@ -18,12 +25,17 @@ When the Tab key is pressed...
 
 Shift + Tab reduces indentation on the selected lines.
 
+## Only in code blocks
+
+If you just want IDE-like tabbing experience in code blocks, now you can do that!
+
 ---
 
 ## Settings
 
-![image](https://github.com/jrymk/restore-tab-key/assets/39593345/c9ccf396-ca8e-4c03-9eb8-a0f5e4909a92)
-![image](https://github.com/jrymk/restore-tab-key/assets/39593345/f8e843c5-af9e-4673-be76-f39393194b0f)
+![image](https://github.com/jrymk/restore-tab-key/assets/39593345/020faaf1-1bce-4f34-8155-184774dd2a46)
+![image](https://github.com/jrymk/restore-tab-key/assets/39593345/621b3a20-f26d-4c0d-a20b-e2eb58e76b77)
+
 
 The tab key now works just like any other IDE. If you select some text and press tab, the selected lines will be indented. If nothing is selected, a tab will be inserted. There is also an option to insert tab regardless.
 
