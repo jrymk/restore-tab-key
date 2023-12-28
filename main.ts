@@ -396,6 +396,26 @@ class SettingTab extends PluginSettingTab {
 			text: localization["tabKeyBehavior"][this.plugin.settings.language],
 		});
 
+
+		new Setting(containerEl)
+			.setName(
+				localization["onlyInCodeBlocks"][this.plugin.settings.language]
+			)
+			.setDesc(
+				localization["onlyInCodeBlocksDesc"][
+					this.plugin.settings.language
+				]
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.activateOnlyOnCodeBlocks)
+					.onChange(async (value) => {
+						this.plugin.settings.activateOnlyOnCodeBlocks = value;
+						this.display(); // refresh display
+						await this.plugin.saveSettings();
+					})
+			);
+
 		new Setting(containerEl)
 			.setName(
 				localization["indentWhenSelectionNotEmpty"][
@@ -412,6 +432,7 @@ class SettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.indentsIfSelection)
 					.onChange(async (value) => {
 						this.plugin.settings.indentsIfSelection = value;
+						this.display(); // refresh display
 						await this.plugin.saveSettings();
 					})
 			);
@@ -442,135 +463,131 @@ class SettingTab extends PluginSettingTab {
 				);
 		}
 
-		new Setting(containerEl)
-			.setName(
-				localization["onlyInCodeBlocks"][this.plugin.settings.language]
-			)
-			.setDesc(
-				localization["onlyInCodeBlocksDesc"][
-					this.plugin.settings.language
-				]
-			)
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.activateOnlyOnCodeBlocks)
-					.onChange(async (value) => {
-						this.plugin.settings.activateOnlyOnCodeBlocks = value;
-						await this.plugin.saveSettings();
-					})
-			);
-
-		new Setting(containerEl)
-			.setName(
-				localization["allowException"][this.plugin.settings.language]
-			)
-			.setDesc(
-				localization["allowExceptionDesc"][
-					this.plugin.settings.language
-				]
-			)
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.allowException)
-					.onChange(async (value) => {
-						this.plugin.settings.allowException = value;
-						this.display(); // refresh display
-						await this.plugin.saveSettings();
-					})
-			);
-		if (this.plugin.settings.allowException) {
+		if (
+			this.plugin.settings.developerMode ||
+			!this.plugin.settings.activateOnlyOnCodeBlocks
+		) {
 			new Setting(containerEl)
 				.setName(
-					localization["exceptionRegex"][
+					localization["allowException"][
 						this.plugin.settings.language
 					]
 				)
 				.setDesc(
-					localization["exceptionRegexDesc"][
-						this.plugin.settings.language
-					]
-				)
-				.addText((textbox) =>
-					textbox
-						.setValue(this.plugin.settings.exceptionRegex)
-						.setPlaceholder("Regex")
-						.onChange(async (value) => {
-							this.plugin.settings.exceptionRegex = value;
-							await this.plugin.saveSettings();
-						})
-				)
-				.addExtraButton((button) =>
-					button.setIcon("rotate-ccw").onClick(async () => {
-						this.plugin.settings.exceptionRegex =
-							"^[\\s\u{00A0}]*(-|\\d+\\.)( \\[ \\])?\\s*$";
-						this.display();
-						await this.plugin.saveSettings();
-					})
-				);
-		}
-
-		containerEl.createEl("h5", {
-			text: localization["pluginCompatibility"][
-				this.plugin.settings.language
-			],
-		});
-
-		new Setting(containerEl)
-			.setName(
-				localization["obsidianTableEditor"][
-					this.plugin.settings.language
-				]
-			)
-			.setDesc(
-				localization["obsidianTableEditorDesc"][
-					this.plugin.settings.language
-				]
-			)
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.obsidianTableEditor)
-					.onChange(async (value) => {
-						this.plugin.settings.obsidianTableEditor = value;
-						await this.plugin.saveSettings();
-					})
-			);
-
-		if (this.plugin.settings.developerMode) {
-			new Setting(containerEl)
-				.setName(
-					localization["advancedTables"][
-						this.plugin.settings.language
-					]
-				)
-				.setDesc(
-					localization["advancedTablesDesc"][
+					localization["allowExceptionDesc"][
 						this.plugin.settings.language
 					]
 				)
 				.addToggle((toggle) =>
 					toggle
-						.setValue(this.plugin.settings.useAdvancedTables)
+						.setValue(this.plugin.settings.allowException)
 						.onChange(async (value) => {
-							this.plugin.settings.useAdvancedTables = value;
+							this.plugin.settings.allowException = value;
+							this.display(); // refresh display
+							await this.plugin.saveSettings();
+						})
+				);
+			if (this.plugin.settings.allowException) {
+				new Setting(containerEl)
+					.setName(
+						localization["exceptionRegex"][
+							this.plugin.settings.language
+						]
+					)
+					.setDesc(
+						localization["exceptionRegexDesc"][
+							this.plugin.settings.language
+						]
+					)
+					.addText((textbox) =>
+						textbox
+							.setValue(this.plugin.settings.exceptionRegex)
+							.setPlaceholder("Regex")
+							.onChange(async (value) => {
+								this.plugin.settings.exceptionRegex = value;
+								await this.plugin.saveSettings();
+							})
+					)
+					.addExtraButton((button) =>
+						button.setIcon("rotate-ccw").onClick(async () => {
+							this.plugin.settings.exceptionRegex =
+								"^[\\s\u{00A0}]*(-|\\d+\\.)( \\[ \\])?\\s*$";
+							this.display();
+							await this.plugin.saveSettings();
+						})
+					);
+			}
+		}
+
+		if (
+			this.plugin.settings.developerMode ||
+			!this.plugin.settings.activateOnlyOnCodeBlocks
+		) {
+			containerEl.createEl("h5", {
+				text: localization["pluginCompatibility"][
+					this.plugin.settings.language
+				],
+			});
+
+			new Setting(containerEl)
+				.setName(
+					localization["obsidianTableEditor"][
+						this.plugin.settings.language
+					]
+				)
+				.setDesc(
+					localization["obsidianTableEditorDesc"][
+						this.plugin.settings.language
+					]
+				)
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.obsidianTableEditor)
+						.onChange(async (value) => {
+							this.plugin.settings.obsidianTableEditor = value;
+							await this.plugin.saveSettings();
+						})
+				);
+
+			if (this.plugin.settings.developerMode) {
+				new Setting(containerEl)
+					.setName(
+						localization["advancedTables"][
+							this.plugin.settings.language
+						]
+					)
+					.setDesc(
+						localization["advancedTablesDesc"][
+							this.plugin.settings.language
+						]
+					)
+					.addToggle((toggle) =>
+						toggle
+							.setValue(this.plugin.settings.useAdvancedTables)
+							.onChange(async (value) => {
+								this.plugin.settings.useAdvancedTables = value;
+								await this.plugin.saveSettings();
+							})
+					);
+			}
+
+			new Setting(containerEl)
+				.setName(
+					localization["outliner"][this.plugin.settings.language]
+				)
+				.setDesc(
+					localization["outlinerDesc"][this.plugin.settings.language]
+				)
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.useOutlinerBetterTab)
+						.onChange(async (value) => {
+							this.plugin.settings.useOutlinerBetterTab = value;
 							await this.plugin.saveSettings();
 						})
 				);
 		}
-
-		new Setting(containerEl)
-			.setName(localization["outliner"][this.plugin.settings.language])
-			.setDesc(
-				localization["outlinerDesc"][this.plugin.settings.language]
-			)
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.useOutlinerBetterTab)
-					.onChange(async (value) => {
-						this.plugin.settings.useOutlinerBetterTab = value;
-						await this.plugin.saveSettings();
-					})
-			);
-
+				
 		containerEl.createEl("h5", {
 			text: localization["additional"][this.plugin.settings.language],
 		});
