@@ -102,9 +102,9 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 		"zh-TW": "對縮排進行例外處理",
 	},
 	onlyInCodeBlocks: {
-		"en-US": "Only activate plugin in code blocks",
-		"zh-CN": "仅在代码区块内激活此插件",
-		"zh-TW": "僅在程式碼區塊內啟用此插件",
+		"en-US": "Only activate in code blocks",
+		"zh-CN": "仅在代码区块内激活",
+		"zh-TW": "僅在程式碼區塊內啟用",
 	},
 	onlyInCodeBlocksDesc: {
 		"en-US":
