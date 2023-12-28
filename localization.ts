@@ -116,7 +116,7 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 	},
 	exceptionRegexDesc: {
 		"en-US":
-			"Default: Indents regardless in empty list entries (zero or more whitespaces, followed by - or number. then optionally a checkbox and then a space). Remove the trailing $ to enable indentation in non-empty lists",
+			"default: Indents regardless in empty list entries (zero or more whitespaces, followed by - or number. then optionally a checkbox and then a space). Remove the trailing $ to enable indentation in non-empty lists",
 		"zh-CN":
 			"默认：在该行为清单列表项目时（零个或以上个空白，加上一个数字，也许再加上一个複选框，然后再一个空白）。删除结尾的 $ 符号，可以让此表达式匹配非空白的清单项目。",
 		"zh-TW":
@@ -134,18 +134,21 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 	},
 	advancedTablesDesc: {
 		"en-US":
-			"Creates a new table or go to next cell when cursor is in a table",
-		"zh-CN": "当光标在一个表格内时按下 Tab 会创建新表格或跳到下一个单元格",
-		"zh-TW": "當游標在一個表格內時按下 Tab 會創建新表格或跳到下一個儲存格",
+			'Creates a new table or go to next cell when cursor is in a table. Requires disabling "Bind tab to table navigation" in the Advanced Tables plugin (and restart Obsidian). I recommend leaving that setting on and this off, and leave tab key binding to Advanced Tables plugin in a table environment, it does the exact same thing.',
+		"zh-CN":
+			"当光标在一个表格内时按下 Tab 会创建新表格或跳到下一个单元格。需要在高级表格插件中关闭「Bind tab to table navigation」并重启黑曜石笔记。建议维持原样，在表格环境内交给高级表格插件处理 Tab 键绑定。",
+		"zh-TW":
+			"當游標在一個表格內時按下 Tab 會創建新表格或跳到下一個儲存格。需要在進階表格插件中關閉「Bind tab to table navigation」並重啟黑曜石筆記。建議維持原樣，在表格環境內交給進階表格插件處理 Tab 鍵綁定。",
 	},
 	outliner: {
 		"en-US": "Use with Obsidian Outliner plugin",
 		"zh-CN": "和 Obsidian Outliner plugin 大纲插件一起使用",
-		"zh-TW": "和 Obsidian Outliner plugin 大綱插件一起使用",
+		"zh-TW":
+			"和 Obsidian Outliner plugin 大綱插件一起使用。基本上當按下 Tab 鍵，且沒有文字被選取，且游標在清單列表上的話，會直接將該清單列表等級",
 	},
 	outlinerDesc: {
 		"en-US":
-			"Try execute Outliner indent operation when tab is pressed, if nothing changed, use default Restore Tab Key plugin behavior",
+			"Try execute Outliner indent operation when tab is pressed, if nothing changed, use default Restore Tab Key plugin behavior. Basically, if the selection is empty and cursor is on a list item, it will indent the item if Tab is pressed, unless it can't, in that case a tab will be inserted. A list item can't be indented if it is already one level deeper than the item above. This plugin can also indent everything under the selected item recursively, and relabel numbered lists.",
 		"zh-CN":
 			"尝试执行 Outliner 的缩排指令，如果没有任何更改则套用本插件的设定",
 		"zh-TW":
@@ -178,5 +181,18 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 		"en-US": "Would Chinese be better?",
 		"zh-CN": "英文会更适合吗？",
 		"zh-TW": "英文會更適合嗎？",
+	},
+	developerMode: {
+		"en-US": "Developer Mode",
+		"zh-CN": "开发者模式",
+		"zh-TW": "開發者模式",
+	},
+	developerModeDesc: {
+		"en-US":
+			"Enable debug on the Obsidian Developer Console, accessible by pressing Ctrl+Shift+I and selecting the Console tab, and show hidden, deprecated settings",
+		"zh-CN":
+			"开启侦错信息，并显示被隐藏、退役的设定们。终端可以透过按下 Ctrl+Shift+I 后选择 Console 分页",
+		"zh-TW":
+			"開啟偵錯訊息，並顯示被隱藏、退役的設定們。終端可以透過按下 Ctrl+Shift+I 後選擇 Console 分頁",
 	},
 };

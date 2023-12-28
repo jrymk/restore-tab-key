@@ -16,6 +16,7 @@ interface TabKeyPluginSettings {
 	useOutlinerBetterTab: boolean;
 	hotkey: string;
 	language: string;
+	developerMode: boolean;
 }
 
 const DEFAULT_SETTINGS: TabKeyPluginSettings = {
@@ -28,9 +29,10 @@ const DEFAULT_SETTINGS: TabKeyPluginSettings = {
 	allowException: true,
 	exceptionRegex: "^[\\s\u{00A0}]*(-|\\d+\\.)( \\[ \\])?\\s*$",
 	useAdvancedTables: false,
-	useOutlinerBetterTab: false,
+	useOutlinerBetterTab: true,
 	hotkey: "Tab",
 	language: "en-US",
+	developerMode: false,
 };
 
 export default class TabKeyPlugin extends Plugin {
@@ -48,12 +50,29 @@ export default class TabKeyPlugin extends Plugin {
 					{
 						key: this.settings.hotkey,
 						run: (): boolean => {
-							if (outlinerIndenting) return false;
+							if (this.settings.developerMode)
+								console.log(
+									"[restore tab] Tab key event triggered"
+								);
+
+							if (outlinerIndenting) {
+								if (this.settings.developerMode)
+									console.log(
+										"[restore tab] Failed to execute: Outliner recursive call blocked"
+									);
+								return false;
+							}
 							const view =
 								this.app.workspace.getActiveViewOfType(
 									MarkdownView
 								);
-							if (!view) return false;
+							if (!view) {
+								if (this.settings.developerMode)
+									console.log(
+										"[restore tab] Failed to execute: Cannot get editor view"
+									);
+								return false;
+							}
 							const editor = view.editor;
 
 							const cursorFrom = editor.getCursor("from");
@@ -80,6 +99,10 @@ export default class TabKeyPlugin extends Plugin {
 								if (
 									prevLine != editor.getLine(cursorFrom.line)
 								) {
+									if (this.settings.developerMode)
+										console.log(
+											"[restore tab] Did not execute: Handled by Outliner"
+										);
 									// outliner probably did its thing
 									return true;
 								}
@@ -94,6 +117,10 @@ export default class TabKeyPlugin extends Plugin {
 								app.commands.executeCommandById(
 									"table-editor-obsidian:next-cell"
 								);
+								if (this.settings.developerMode)
+									console.log(
+										"[restore tab] Did not execute: Handled by Advanced Table"
+									);
 								return true;
 							}
 
@@ -105,6 +132,8 @@ export default class TabKeyPlugin extends Plugin {
 									cursorTo.line != cursorFrom.line)
 							) {
 								editor.exec("indentMore");
+								if (this.settings.developerMode)
+									console.log("[restore tab] Indented");
 							} else {
 								const cursorFrom = editor.getCursor("from");
 								const tabStr = this.settings.useSpaces
@@ -132,6 +161,10 @@ export default class TabKeyPlugin extends Plugin {
 										).test(editor.getLine(cursorFrom.line))
 									) {
 										editor.exec("indentMore");
+										if (this.settings.developerMode)
+											console.log(
+												"[restore tab] Indented (regex exception)"
+											);
 										return true;
 									}
 								}
@@ -142,6 +175,8 @@ export default class TabKeyPlugin extends Plugin {
 									line: cursorFrom.line,
 									ch: cursorFrom.ch + tabStr.length,
 								});
+								if (this.settings.developerMode)
+									console.log("[restore tab] Tab inserted");
 							}
 							return true;
 						},
@@ -241,24 +276,6 @@ class SettingTab extends PluginSettingTab {
 		if (this.plugin.settings.useSpaces) {
 			new Setting(containerEl)
 				.setName(
-					localization["useHardSpaces"][this.plugin.settings.language]
-				)
-				.setDesc(
-					localization["useHardSpacesDesc"][
-						this.plugin.settings.language
-					]
-				)
-				.addToggle((toggle) =>
-					toggle
-						.setValue(this.plugin.settings.useHardSpace)
-						.onChange(async (value) => {
-							this.plugin.settings.useHardSpace = value;
-							await this.plugin.saveSettings();
-						})
-				);
-
-			new Setting(containerEl)
-				.setName(
 					localization["spaceCount"][this.plugin.settings.language]
 				)
 				.setDesc(
@@ -291,6 +308,24 @@ class SettingTab extends PluginSettingTab {
 						.setValue(this.plugin.settings.alignSpaces)
 						.onChange(async (value) => {
 							this.plugin.settings.alignSpaces = value;
+							await this.plugin.saveSettings();
+						})
+				);
+
+			new Setting(containerEl)
+				.setName(
+					localization["useHardSpaces"][this.plugin.settings.language]
+				)
+				.setDesc(
+					localization["useHardSpacesDesc"][
+						this.plugin.settings.language
+					]
+				)
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.useHardSpace)
+						.onChange(async (value) => {
+							this.plugin.settings.useHardSpace = value;
 							await this.plugin.saveSettings();
 						})
 				);
@@ -401,23 +436,27 @@ class SettingTab extends PluginSettingTab {
 			],
 		});
 
-		new Setting(containerEl)
-			.setName(
-				localization["advancedTables"][this.plugin.settings.language]
-			)
-			.setDesc(
-				localization["advancedTablesDesc"][
-					this.plugin.settings.language
-				]
-			)
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.useAdvancedTables)
-					.onChange(async (value) => {
-						this.plugin.settings.useAdvancedTables = value;
-						await this.plugin.saveSettings();
-					})
-			);
+		if (this.plugin.settings.developerMode) {
+			new Setting(containerEl)
+				.setName(
+					localization["advancedTables"][
+						this.plugin.settings.language
+					]
+				)
+				.setDesc(
+					localization["advancedTablesDesc"][
+						this.plugin.settings.language
+					]
+				)
+				.addToggle((toggle) =>
+					toggle
+						.setValue(this.plugin.settings.useAdvancedTables)
+						.onChange(async (value) => {
+							this.plugin.settings.useAdvancedTables = value;
+							await this.plugin.saveSettings();
+						})
+				);
+		}
 
 		new Setting(containerEl)
 			.setName(localization["outliner"][this.plugin.settings.language])
@@ -456,9 +495,26 @@ class SettingTab extends PluginSettingTab {
 			.addExtraButton((button) =>
 				button.setIcon("rotate-ccw").onClick(async () => {
 					this.plugin.settings.hotkey = "Tab";
-					this.display();
+					this.display(); // refresh display
 					await this.plugin.saveSettings();
 				})
+			);
+
+		new Setting(containerEl)
+			.setName(
+				localization["developerMode"][this.plugin.settings.language]
+			)
+			.setDesc(
+				localization["developerModeDesc"][this.plugin.settings.language]
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.developerMode)
+					.onChange(async (value) => {
+						this.plugin.settings.developerMode = value;
+						this.display(); // refresh display
+						await this.plugin.saveSettings();
+					})
 			);
 	}
 }
