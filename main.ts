@@ -1,9 +1,11 @@
-import { Prec } from "@codemirror/state";
+import { syntaxTree } from "@codemirror/language";
+import { EditorState, Prec } from "@codemirror/state";
 import { EditorView, keymap } from "@codemirror/view";
 import { localization } from "localization";
 import { App, MarkdownView, Plugin, PluginSettingTab, Setting } from "obsidian";
 
 interface TabKeyPluginSettings {
+	activateOnlyOnCodeBlocks: boolean;
 	indentsIfSelection: boolean;
 	indentsIfSelectionOnlyForMultipleLines: boolean;
 	useSpaces: boolean;
@@ -21,6 +23,7 @@ interface TabKeyPluginSettings {
 }
 
 const DEFAULT_SETTINGS: TabKeyPluginSettings = {
+	activateOnlyOnCodeBlocks: false,
 	indentsIfSelection: true,
 	indentsIfSelectionOnlyForMultipleLines: true,
 	useSpaces: false,
@@ -76,8 +79,25 @@ export default class TabKeyPlugin extends Plugin {
 								return false;
 							}
 							const editor = view.editor;
-
 							const sourceMode: boolean = view.getState().source;
+							const token = this.getToken(editor.cm.state);
+
+							if (this.settings.developerMode)
+								console.log(
+									"[restore tab] Current token: " + token
+								);
+
+							if (
+								this.settings.activateOnlyOnCodeBlocks &&
+								!token.startsWith("hmd-codeblock")
+							) {
+								if (this.settings.developerMode)
+									console.log(
+										"[restore tab] Did not execute: Not a code block"
+									);
+
+								return false; // When the command function returns `false`, further bindings will be tried for the key.
+							}
 
 							const cursorFrom = editor.getCursor("from");
 							const cursorTo = editor.getCursor("to");
@@ -96,6 +116,11 @@ export default class TabKeyPlugin extends Plugin {
 									cursorFrom.line
 								);
 								outlinerIndenting = true;
+
+								if (this.settings.developerMode)
+									console.log(
+										"[restore tab] Trying Outliner indent"
+									);
 								app.commands.executeCommandById(
 									"obsidian-outliner:indent-list"
 								);
@@ -208,12 +233,18 @@ export default class TabKeyPlugin extends Plugin {
 							}
 							return true;
 						},
-						preventDefault: true,
+						preventDefault: false, // always preventDefault
 					},
 				])
 			)
 		);
 	}
+
+	getToken = (state: EditorState) => {
+		const ast = syntaxTree(state);
+		return ast.resolveInner(state.selection.main.head, -1).type
+			.name as string;
+	};
 
 	createKeymapRunCallback() {
 		return (view: EditorView): boolean => {
@@ -408,6 +439,24 @@ class SettingTab extends PluginSettingTab {
 						})
 				);
 		}
+
+		new Setting(containerEl)
+			.setName(
+				localization["onlyInCodeBlocks"][this.plugin.settings.language]
+			)
+			.setDesc(
+				localization["onlyInCodeBlocksDesc"][
+					this.plugin.settings.language
+				]
+			)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.activateOnlyOnCodeBlocks)
+					.onChange(async (value) => {
+						this.plugin.settings.activateOnlyOnCodeBlocks = value;
+						await this.plugin.saveSettings();
+					})
+			);
 
 		new Setting(containerEl)
 			.setName(

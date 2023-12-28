@@ -101,6 +101,19 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 		"zh-CN": "允许对缩进进行例外处理",
 		"zh-TW": "對縮排進行例外處理",
 	},
+	onlyInCodeBlocks: {
+		"en-US": "Only activate plugin in code blocks",
+		"zh-CN": "仅在代码区块内激活此插件",
+		"zh-TW": "僅在程式碼區塊內啟用此插件",
+	},
+	onlyInCodeBlocksDesc: {
+		"en-US":
+			"Will do nothing if the cursor is not in a code block and use default behavior (indent, or other plugins that uses the tab key, like Obsidian Tabout)",
+		"zh-CN":
+			"当光标不在代码区块内的话，使用默认 Tab 键行为（缩进，或者其他使用 Tab 键的插件，如 Obsidian Tabout）",
+		"zh-TW":
+			"當游標不在程式碼區塊內的話，使用預設 Tab 鍵行為（縮排，或者其他使用 Tab 鍵的插件，如 Obsidian Tabout）",
+	},
 	allowExceptionDesc: {
 		"en-US":
 			"Indent line even when the selection is empty when the line matches the regex (For example, when cursor is on an empty list bullet)",
