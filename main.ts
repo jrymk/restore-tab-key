@@ -80,6 +80,7 @@ export default class TabKeyPlugin extends Plugin {
 							}
 							const editor = view.editor;
 							const sourceMode: boolean = view.getState().source;
+							//@ts-expect-error cm is not defined in the type docs
 							const token = this.getToken(editor.cm.state);
 
 							if (this.settings.developerMode)
@@ -240,6 +241,7 @@ export default class TabKeyPlugin extends Plugin {
 		);
 	}
 
+	// Taken from the Obsidian Tabout plugin. No way I figure this out myself, this is AWESOME!!!
 	getToken = (state: EditorState) => {
 		const ast = syntaxTree(state);
 		return ast.resolveInner(state.selection.main.head, -1).type
