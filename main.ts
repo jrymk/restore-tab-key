@@ -36,7 +36,7 @@ const DEFAULT_SETTINGS: TabKeyPluginSettings = {
 	obsidianTableEditor: true,
 	useOutlinerBetterTab: true,
 	hotkey: "Tab",
-	language: "en-US",
+	language: "auto",
 	developerMode: false,
 };
 
