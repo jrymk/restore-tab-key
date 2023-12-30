@@ -74,18 +74,19 @@ export default class TabKeyPlugin extends Plugin {
 
 							this.log("Current token: " + token);
 
-							if (this.settings.activateOnlyOnCodeBlocks) {
-								if (!token.includes("hmd-codeblock")) {
+							if (!token.includes("hmd-codeblock")) {
+								// not in a code block
+								if (this.settings.activateOnlyOnCodeBlocks) {
 									this.log("Did not execute: Not a code block");
 									return false; // When the command function returns `false`, further bindings will be tried for the key.
-								} else {
-									// cursor is in a code block; without dev mode, these settings are hidden. we will update settings temporarily without saving
-									if (!this.settings.developerMode) {
-										this.settings.allowException = false; // in case the code matches the regex (- or 1. or - [ ] etc.)
-										this.settings.useAdvancedTables = false; // in case the code has pipes (|)
-										this.settings.obsidianTableEditor = false;
-										this.settings.useOutlinerBetterTab = false;
-									}
+								}
+							} else {
+								// cursor is in a code block; without dev mode, these recommended settings will override. we will update settings temporarily without saving
+								if (!this.settings.developerMode) {
+									this.settings.allowException = false; // in case the code matches the regex (- or 1. or - [ ] etc.)
+									this.settings.useAdvancedTables = false; // in case the code has pipes (|)
+									this.settings.obsidianTableEditor = false;
+									this.settings.useOutlinerBetterTab = false;
 								}
 							}
 
