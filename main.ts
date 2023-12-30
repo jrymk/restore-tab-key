@@ -55,124 +55,79 @@ export default class TabKeyPlugin extends Plugin {
 					{
 						key: this.settings.hotkey,
 						run: (): boolean => {
-							if (this.settings.developerMode)
-								console.log(
-									"[restore tab] Tab key event triggered"
-								);
+							this.log("Tab key event triggered");
 
 							if (outlinerIndenting) {
-								if (this.settings.developerMode)
-									console.log(
-										"[restore tab] Failed to execute: Outliner recursive call blocked"
-									);
+								this.log("Failed to execute: Outliner recursive call blocked");
 								return false;
 							}
-							const view =
-								this.app.workspace.getActiveViewOfType(
-									MarkdownView
-								);
+							const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 							if (!view) {
-								if (this.settings.developerMode)
-									console.log(
-										"[restore tab] Failed to execute: Cannot get editor view"
-									);
+								this.log("Failed to execute: Cannot get editor view");
 								return false;
 							}
+
 							const editor = view.editor;
 							const sourceMode: boolean = view.getState().source;
 							//@ts-expect-error cm is not defined in the type docs
 							const token = this.getToken(editor.cm.state);
 
-							if (this.settings.developerMode)
-								console.log(
-									"[restore tab] Current token: " + token
-								);
+							this.log("Current token: " + token);
 
-							if (
-								this.settings.activateOnlyOnCodeBlocks &&
-								!token.startsWith("hmd-codeblock")
-							) {
-								if (this.settings.developerMode)
-									console.log(
-										"[restore tab] Did not execute: Not a code block"
-									);
-
-								return false; // When the command function returns `false`, further bindings will be tried for the key.
+							if (this.settings.activateOnlyOnCodeBlocks) {
+								if (!token.includes("hmd-codeblock")) {
+									this.log("Did not execute: Not a code block");
+									return false; // When the command function returns `false`, further bindings will be tried for the key.
+								} else {
+									// cursor is in a code block; without dev mode, these settings are hidden. we will update settings temporarily without saving
+									if (!this.settings.developerMode) {
+										this.settings.allowException = false; // in case the code matches the regex (- or 1. or - [ ] etc.)
+										this.settings.useAdvancedTables = false; // in case the code has pipes (|)
+										this.settings.obsidianTableEditor = false;
+										this.settings.useOutlinerBetterTab = false;
+									}
+								}
 							}
 
 							const cursorFrom = editor.getCursor("from");
 							const cursorTo = editor.getCursor("to");
-							const somethingSelected =
-								cursorFrom.line != cursorTo.line ||
-								cursorFrom.ch != cursorTo.ch;
+							const somethingSelected = cursorFrom.line != cursorTo.line || cursorFrom.ch != cursorTo.ch;
 							const app = this.app as any;
 
 							if (
 								this.settings.useOutlinerBetterTab &&
-								RegExp("^[\\s]*(-|\\d+\\.)", "u").test(
-									editor.getLine(cursorFrom.line)
-								)
+								RegExp("^[\\s]*(-|\\d+\\.)", "u").test(editor.getLine(cursorFrom.line))
 							) {
-								const prevLine = editor.getLine(
-									cursorFrom.line
-								);
+								const prevLine = editor.getLine(cursorFrom.line);
 								outlinerIndenting = true;
 
-								if (this.settings.developerMode)
-									console.log(
-										"[restore tab] Trying Outliner indent"
-									);
-								app.commands.executeCommandById(
-									"obsidian-outliner:indent-list"
-								);
+								this.log("Trying Outliner indent");
+								app.commands.executeCommandById("obsidian-outliner:indent-list");
 								outlinerIndenting = false;
-								if (
-									prevLine != editor.getLine(cursorFrom.line)
-								) {
-									if (this.settings.developerMode)
-										console.log(
-											"[restore tab] Did not execute: Handled by Outliner"
-										);
+								if (prevLine != editor.getLine(cursorFrom.line)) {
+									this.log("Did not execute: Handled by Outliner");
 									// outliner probably did its thing
 									return true;
 								}
 							}
 
-							if (
-								RegExp(`^\\|`, "u").test(
-									editor.getLine(cursorFrom.line)
-								)
-							) {
+							if (RegExp(`^\\|`, "u").test(editor.getLine(cursorFrom.line))) {
 								if (!sourceMode) {
 									// live preview mode
-									if (this.settings.developerMode)
-										console.log(
-											"[restore tab] Table environment in Live Preview mode"
-										);
+									this.log("Table environment in Live Preview mode");
 
 									if (this.settings.obsidianTableEditor) {
 										// leave the editor alone
-										if (this.settings.developerMode)
-											console.log(
-												"[restore tab] Did not execute: Handled by Obsidian Table Editor"
-											);
+										this.log("Did not execute: Handled by Obsidian Table Editor");
 										return false;
 									}
 								} else {
 									// source mode
-									if (this.settings.developerMode)
-										console.log(
-											"[restore tab] Table environment in Source mode"
-										);
+									this.log("Table environment in Source mode");
 
 									if (this.settings.useAdvancedTables) {
-										app.commands.executeCommandById(
-											"table-editor-obsidian:next-cell"
-										);
-										if (this.settings.developerMode)
-											console.log(
-												"[restore tab] Did not execute: Handled by Advanced Table"
-											);
+										app.commands.executeCommandById("table-editor-obsidian:next-cell");
+										this.log("Did not execute: Handled by Advanced Table");
 										return true;
 									}
 								}
@@ -181,44 +136,28 @@ export default class TabKeyPlugin extends Plugin {
 							if (
 								somethingSelected &&
 								this.settings.indentsIfSelection &&
-								(!this.settings
-									.indentsIfSelectionOnlyForMultipleLines ||
+								(!this.settings.indentsIfSelectionOnlyForMultipleLines ||
 									cursorTo.line != cursorFrom.line)
 							) {
 								editor.exec("indentMore");
-								if (this.settings.developerMode)
-									console.log("[restore tab] Indented");
+								this.log("Indented");
 							} else {
 								const cursorFrom = editor.getCursor("from");
 								const tabStr = this.settings.useSpaces
-									? (this.settings.useHardSpace
-											? " "
-											: " "
-									  ).repeat(
+									? (this.settings.useHardSpace ? " " : " ").repeat(
 											this.settings.alignSpaces
 												? this.settings.spacesCount -
-														(cursorFrom.ch %
-															this.settings
-																.spacesCount)
+														(cursorFrom.ch % this.settings.spacesCount)
 												: this.settings.spacesCount
 									  )
 									: "\t";
 
-								if (
-									!somethingSelected &&
-									this.settings.allowException
-								) {
+								if (!somethingSelected && this.settings.allowException) {
 									if (
-										RegExp(
-											this.settings.exceptionRegex,
-											"u"
-										).test(editor.getLine(cursorFrom.line))
+										RegExp(this.settings.exceptionRegex, "u").test(editor.getLine(cursorFrom.line))
 									) {
 										editor.exec("indentMore");
-										if (this.settings.developerMode)
-											console.log(
-												"[restore tab] Indented (regex exception)"
-											);
+										this.log("Indented (regex exception)");
 										return true;
 									}
 								}
@@ -229,8 +168,7 @@ export default class TabKeyPlugin extends Plugin {
 									line: cursorFrom.line,
 									ch: cursorFrom.ch + tabStr.length,
 								});
-								if (this.settings.developerMode)
-									console.log("[restore tab] Tab inserted");
+								this.log("Tab inserted");
 							}
 							return true;
 						},
@@ -244,8 +182,11 @@ export default class TabKeyPlugin extends Plugin {
 	// Taken from the Obsidian Tabout plugin. No way I figure this out myself, this is AWESOME!!!
 	getToken = (state: EditorState) => {
 		const ast = syntaxTree(state);
-		return ast.resolveInner(state.selection.main.head, -1).type
-			.name as string;
+		return ast.resolveInner(state.selection.main.head, -1).type.name as string;
+	};
+
+	log = (msg: string) => {
+		if (this.settings.developerMode) console.log("[restore tab] " + msg);
 	};
 
 	createKeymapRunCallback() {
@@ -257,11 +198,7 @@ export default class TabKeyPlugin extends Plugin {
 	onunload() {}
 
 	async loadSettings() {
-		this.settings = Object.assign(
-			{},
-			DEFAULT_SETTINGS,
-			await this.loadData()
-		);
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	}
 
 	async saveSettings() {
@@ -278,25 +215,39 @@ class SettingTab extends PluginSettingTab {
 	}
 
 	display(): void {
+		// load user app language setting
+		const appLang = window.localStorage.getItem("language");
+		this.plugin.log("Detected application language: " + appLang + (appLang == null ? " (aka English)" : ""));
+
+		const lang =
+			this.plugin.settings.language == "auto"
+				? appLang == "zh-TW"
+					? "zh-TW"
+					: (appLang == "zh"
+					? "zh-CN"
+					: "en-US")
+				: this.plugin.settings.language;
+
+		this.plugin.log("Using localization: " + lang);
+
 		const { containerEl } = this;
 		containerEl.empty();
 		containerEl.createEl("h3", {
-			text: localization["title"][this.plugin.settings.language],
+			text: localization["title"][lang],
 		});
 		containerEl.createEl("i", {
-			text: localization["description"][this.plugin.settings.language],
+			text: localization["description"][lang],
 		});
 		containerEl.createEl("br");
 		containerEl.createEl("br");
 
 		new Setting(containerEl)
-			.setName(localization["language"][this.plugin.settings.language])
-			.setDesc(
-				localization["languageDesc"][this.plugin.settings.language]
-			)
+			.setName(localization["language"][lang])
+			.setDesc(localization["languageDesc"][lang])
 			.addDropdown((toggle) =>
 				toggle
 					.addOptions({
+						auto: localization["auto"][lang],
 						"en-US": "English (US)",
 						"zh-CN": "简体中文",
 						"zh-TW": "繁體中文",
@@ -310,40 +261,24 @@ class SettingTab extends PluginSettingTab {
 			);
 
 		containerEl.createEl("h5", {
-			text: localization["tabOrSpace"][this.plugin.settings.language],
+			text: localization["tabOrSpace"][lang],
 		});
 
 		new Setting(containerEl)
-			.setName(
-				localization["useSpacesInsteadOfTab"][
-					this.plugin.settings.language
-				]
-			)
-			.setDesc(
-				localization["useSpacesInsteadOfTabDesc"][
-					this.plugin.settings.language
-				]
-			)
+			.setName(localization["useSpacesInsteadOfTab"][lang])
+			.setDesc(localization["useSpacesInsteadOfTabDesc"][lang])
 			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.useSpaces)
-					.onChange(async (value) => {
-						this.plugin.settings.useSpaces = value;
-						this.display(); // refresh display
-						await this.plugin.saveSettings();
-					})
+				toggle.setValue(this.plugin.settings.useSpaces).onChange(async (value) => {
+					this.plugin.settings.useSpaces = value;
+					this.display(); // refresh display
+					await this.plugin.saveSettings();
+				})
 			);
 
 		if (this.plugin.settings.useSpaces) {
 			new Setting(containerEl)
-				.setName(
-					localization["spaceCount"][this.plugin.settings.language]
-				)
-				.setDesc(
-					localization["spaceCountDesc"][
-						this.plugin.settings.language
-					]
-				)
+				.setName(localization["spaceCount"][lang])
+				.setDesc(localization["spaceCountDesc"][lang])
 				.addSlider((slider) =>
 					slider
 						.setValue(this.plugin.settings.spacesCount)
@@ -356,149 +291,81 @@ class SettingTab extends PluginSettingTab {
 				);
 
 			new Setting(containerEl)
-				.setName(
-					localization["alignSpaces"][this.plugin.settings.language]
-				)
-				.setDesc(
-					localization["alignSpacesDesc"][
-						this.plugin.settings.language
-					]
-				)
+				.setName(localization["alignSpaces"][lang])
+				.setDesc(localization["alignSpacesDesc"][lang])
 				.addToggle((toggle) =>
-					toggle
-						.setValue(this.plugin.settings.alignSpaces)
-						.onChange(async (value) => {
-							this.plugin.settings.alignSpaces = value;
-							await this.plugin.saveSettings();
-						})
+					toggle.setValue(this.plugin.settings.alignSpaces).onChange(async (value) => {
+						this.plugin.settings.alignSpaces = value;
+						await this.plugin.saveSettings();
+					})
 				);
 
 			new Setting(containerEl)
-				.setName(
-					localization["useHardSpaces"][this.plugin.settings.language]
-				)
-				.setDesc(
-					localization["useHardSpacesDesc"][
-						this.plugin.settings.language
-					]
-				)
+				.setName(localization["useHardSpaces"][lang])
+				.setDesc(localization["useHardSpacesDesc"][lang])
 				.addToggle((toggle) =>
-					toggle
-						.setValue(this.plugin.settings.useHardSpace)
-						.onChange(async (value) => {
-							this.plugin.settings.useHardSpace = value;
-							await this.plugin.saveSettings();
-						})
+					toggle.setValue(this.plugin.settings.useHardSpace).onChange(async (value) => {
+						this.plugin.settings.useHardSpace = value;
+						await this.plugin.saveSettings();
+					})
 				);
 		}
 
 		containerEl.createEl("h5", {
-			text: localization["tabKeyBehavior"][this.plugin.settings.language],
+			text: localization["tabKeyBehavior"][lang],
 		});
 
-
 		new Setting(containerEl)
-			.setName(
-				localization["onlyInCodeBlocks"][this.plugin.settings.language]
-			)
-			.setDesc(
-				localization["onlyInCodeBlocksDesc"][
-					this.plugin.settings.language
-				]
-			)
+			.setName(localization["onlyInCodeBlocks"][lang])
+			.setDesc(localization["onlyInCodeBlocksDesc"][lang])
 			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.activateOnlyOnCodeBlocks)
-					.onChange(async (value) => {
-						this.plugin.settings.activateOnlyOnCodeBlocks = value;
-						this.display(); // refresh display
-						await this.plugin.saveSettings();
-					})
+				toggle.setValue(this.plugin.settings.activateOnlyOnCodeBlocks).onChange(async (value) => {
+					this.plugin.settings.activateOnlyOnCodeBlocks = value;
+					this.display(); // refresh display
+					await this.plugin.saveSettings();
+				})
 			);
 
 		new Setting(containerEl)
-			.setName(
-				localization["indentWhenSelectionNotEmpty"][
-					this.plugin.settings.language
-				]
-			)
-			.setDesc(
-				localization["indentWhenSelectionNotEmptyDesc"][
-					this.plugin.settings.language
-				]
-			)
+			.setName(localization["indentWhenSelectionNotEmpty"][lang])
+			.setDesc(localization["indentWhenSelectionNotEmptyDesc"][lang])
 			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.indentsIfSelection)
-					.onChange(async (value) => {
-						this.plugin.settings.indentsIfSelection = value;
-						this.display(); // refresh display
-						await this.plugin.saveSettings();
-					})
+				toggle.setValue(this.plugin.settings.indentsIfSelection).onChange(async (value) => {
+					this.plugin.settings.indentsIfSelection = value;
+					this.display(); // refresh display
+					await this.plugin.saveSettings();
+				})
 			);
 
 		if (this.plugin.settings.indentsIfSelection) {
 			new Setting(containerEl)
-				.setName(
-					localization["indentOnlySelectionMultipleLine"][
-						this.plugin.settings.language
-					]
-				)
-				.setDesc(
-					localization["indentOnlySelectionMultipleLineDesc"][
-						this.plugin.settings.language
-					]
-				)
+				.setName(localization["indentOnlySelectionMultipleLine"][lang])
+				.setDesc(localization["indentOnlySelectionMultipleLineDesc"][lang])
 				.addToggle((toggle) =>
 					toggle
-						.setValue(
-							this.plugin.settings
-								.indentsIfSelectionOnlyForMultipleLines
-						)
+						.setValue(this.plugin.settings.indentsIfSelectionOnlyForMultipleLines)
 						.onChange(async (value) => {
-							this.plugin.settings.indentsIfSelectionOnlyForMultipleLines =
-								value;
+							this.plugin.settings.indentsIfSelectionOnlyForMultipleLines = value;
 							await this.plugin.saveSettings();
 						})
 				);
 		}
 
-		if (
-			this.plugin.settings.developerMode ||
-			!this.plugin.settings.activateOnlyOnCodeBlocks
-		) {
+		if (this.plugin.settings.developerMode || !this.plugin.settings.activateOnlyOnCodeBlocks) {
 			new Setting(containerEl)
-				.setName(
-					localization["allowException"][
-						this.plugin.settings.language
-					]
-				)
-				.setDesc(
-					localization["allowExceptionDesc"][
-						this.plugin.settings.language
-					]
-				)
+				.setName(localization["allowException"][lang])
+				.setDesc(localization["allowExceptionDesc"][lang])
 				.addToggle((toggle) =>
-					toggle
-						.setValue(this.plugin.settings.allowException)
-						.onChange(async (value) => {
-							this.plugin.settings.allowException = value;
-							this.display(); // refresh display
-							await this.plugin.saveSettings();
-						})
+					toggle.setValue(this.plugin.settings.allowException).onChange(async (value) => {
+						this.plugin.settings.allowException = value;
+						this.display(); // refresh display
+						await this.plugin.saveSettings();
+					})
 				);
 			if (this.plugin.settings.allowException) {
 				new Setting(containerEl)
-					.setName(
-						localization["exceptionRegex"][
-							this.plugin.settings.language
-						]
-					)
-					.setDesc(
-						localization["exceptionRegexDesc"][
-							this.plugin.settings.language
-						]
-					)
+					.setName(localization["exceptionRegex"][lang])
+					.setDesc(localization["exceptionRegexDesc"][lang])
 					.addText((textbox) =>
 						textbox
 							.setValue(this.plugin.settings.exceptionRegex)
@@ -510,8 +377,7 @@ class SettingTab extends PluginSettingTab {
 					)
 					.addExtraButton((button) =>
 						button.setIcon("rotate-ccw").onClick(async () => {
-							this.plugin.settings.exceptionRegex =
-								"^[\\s\u{00A0}]*(-|\\d+\\.)( \\[ \\])?\\s*$";
+							this.plugin.settings.exceptionRegex = "^[\\s\u{00A0}]*(-|\\d+\\.)( \\[ \\])?\\s*$";
 							this.display();
 							await this.plugin.saveSettings();
 						})
@@ -519,86 +385,51 @@ class SettingTab extends PluginSettingTab {
 			}
 		}
 
-		if (
-			this.plugin.settings.developerMode ||
-			!this.plugin.settings.activateOnlyOnCodeBlocks
-		) {
+		if (this.plugin.settings.developerMode || !this.plugin.settings.activateOnlyOnCodeBlocks) {
 			containerEl.createEl("h5", {
-				text: localization["pluginCompatibility"][
-					this.plugin.settings.language
-				],
+				text: localization["pluginCompatibility"][lang],
 			});
 
 			new Setting(containerEl)
-				.setName(
-					localization["obsidianTableEditor"][
-						this.plugin.settings.language
-					]
-				)
-				.setDesc(
-					localization["obsidianTableEditorDesc"][
-						this.plugin.settings.language
-					]
-				)
+				.setName(localization["obsidianTableEditor"][lang])
+				.setDesc(localization["obsidianTableEditorDesc"][lang])
 				.addToggle((toggle) =>
-					toggle
-						.setValue(this.plugin.settings.obsidianTableEditor)
-						.onChange(async (value) => {
-							this.plugin.settings.obsidianTableEditor = value;
-							await this.plugin.saveSettings();
-						})
+					toggle.setValue(this.plugin.settings.obsidianTableEditor).onChange(async (value) => {
+						this.plugin.settings.obsidianTableEditor = value;
+						await this.plugin.saveSettings();
+					})
 				);
 
 			if (this.plugin.settings.developerMode) {
 				new Setting(containerEl)
-					.setName(
-						localization["advancedTables"][
-							this.plugin.settings.language
-						]
-					)
-					.setDesc(
-						localization["advancedTablesDesc"][
-							this.plugin.settings.language
-						]
-					)
+					.setName(localization["advancedTables"][lang])
+					.setDesc(localization["advancedTablesDesc"][lang])
 					.addToggle((toggle) =>
-						toggle
-							.setValue(this.plugin.settings.useAdvancedTables)
-							.onChange(async (value) => {
-								this.plugin.settings.useAdvancedTables = value;
-								await this.plugin.saveSettings();
-							})
+						toggle.setValue(this.plugin.settings.useAdvancedTables).onChange(async (value) => {
+							this.plugin.settings.useAdvancedTables = value;
+							await this.plugin.saveSettings();
+						})
 					);
 			}
 
 			new Setting(containerEl)
-				.setName(
-					localization["outliner"][this.plugin.settings.language]
-				)
-				.setDesc(
-					localization["outlinerDesc"][this.plugin.settings.language]
-				)
+				.setName(localization["outliner"][lang])
+				.setDesc(localization["outlinerDesc"][lang])
 				.addToggle((toggle) =>
-					toggle
-						.setValue(this.plugin.settings.useOutlinerBetterTab)
-						.onChange(async (value) => {
-							this.plugin.settings.useOutlinerBetterTab = value;
-							await this.plugin.saveSettings();
-						})
+					toggle.setValue(this.plugin.settings.useOutlinerBetterTab).onChange(async (value) => {
+						this.plugin.settings.useOutlinerBetterTab = value;
+						await this.plugin.saveSettings();
+					})
 				);
 		}
-				
+
 		containerEl.createEl("h5", {
-			text: localization["additional"][this.plugin.settings.language],
+			text: localization["additional"][lang],
 		});
 
 		new Setting(containerEl)
-			.setName(
-				localization["customHotkey"][this.plugin.settings.language]
-			)
-			.setDesc(
-				localization["customHotkeyDesc"][this.plugin.settings.language]
-			)
+			.setName(localization["customHotkey"][lang])
+			.setDesc(localization["customHotkeyDesc"][lang])
 			.addText((textbox) =>
 				textbox
 					.setValue(this.plugin.settings.hotkey)
@@ -617,20 +448,14 @@ class SettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName(
-				localization["developerMode"][this.plugin.settings.language]
-			)
-			.setDesc(
-				localization["developerModeDesc"][this.plugin.settings.language]
-			)
+			.setName(localization["developerMode"][lang])
+			.setDesc(localization["developerModeDesc"][lang])
 			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.developerMode)
-					.onChange(async (value) => {
-						this.plugin.settings.developerMode = value;
-						this.display(); // refresh display
-						await this.plugin.saveSettings();
-					})
+				toggle.setValue(this.plugin.settings.developerMode).onChange(async (value) => {
+					this.plugin.settings.developerMode = value;
+					this.display(); // refresh display
+					await this.plugin.saveSettings();
+				})
 			);
 	}
 }

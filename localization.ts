@@ -5,8 +5,7 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 		"zh-TW": "黑曜石筆記 恢復制表鍵行為插件",
 	},
 	description: {
-		"en-US":
-			"Restore tab key behavior: tab key inserts a tab, the way it should be.",
+		"en-US": "Restore tab key behavior: tab key inserts a tab, the way it should be.",
 		"zh-CN": "回復 Tab 键行为，本该如此！",
 		"zh-TW": "回復 Tab 鍵行為，本該如此！",
 	},
@@ -23,10 +22,8 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 	useSpacesInsteadOfTabDesc: {
 		"en-US":
 			"false(default): Insert tab (\\t) when tab key is pressed. true: Insert spaces (    ) when tab key is pressed. (configurable)",
-		"zh-CN":
-			"关闭(默认)：在 Tab 键被按下时插入表格符号 (Tab)；开启：在 Tab 键被按下时插入空白符号（可以自订义）",
-		"zh-TW":
-			"關閉(預設)：在 Tab 鍵被按下時插入表格符號 (Tab)；開啟：在 Tab 鍵被按下時插入空白符號（可以自訂義）",
+		"zh-CN": "关闭(默认)：在 Tab 键被按下时插入表格符号 (Tab)；开启：在 Tab 键被按下时插入空白符号（可以自订义）",
+		"zh-TW": "關閉(預設)：在 Tab 鍵被按下時插入表格符號 (Tab)；開啟：在 Tab 鍵被按下時插入空白符號（可以自訂義）",
 	},
 	useHardSpaces: {
 		"en-US": "Use hard spaces",
@@ -47,8 +44,7 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 		"zh-TW": "空格數量",
 	},
 	spaceCountDesc: {
-		"en-US":
-			"The number of spaces or hard spaces inserted when tab key is pressed. default: 4",
+		"en-US": "The number of spaces or hard spaces inserted when tab key is pressed. default: 4",
 		"zh-CN": "使用几个空格字符取代一个 Tab 字符？默认：4个",
 		"zh-TW": "使用幾個空格符號取代一個 Tab 字元？預設：4個",
 	},
@@ -91,10 +87,8 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 	indentOnlySelectionMultipleLineDesc: {
 		"en-US":
 			"true(default): If the selection lies within one line, a tab (or spaces) will replace the selection instead",
-		"zh-CN":
-			"开启（默认）：如果仅有一行文字被选取，则选取的文字会被取代为一个 Tab",
-		"zh-TW":
-			"開啟（預設）：如果僅有一行文字被選取，則選取的文字會被取代為一個 Tab",
+		"zh-CN": "开启（默认）：如果仅有一行文字被选取，则选取的文字会被取代为一个 Tab",
+		"zh-TW": "開啟（預設）：如果僅有一行文字被選取，則選取的文字會被取代為一個 Tab",
 	},
 	allowException: {
 		"en-US": "Allow exceptions for indenting",
@@ -109,18 +103,15 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 	onlyInCodeBlocksDesc: {
 		"en-US":
 			"Will do nothing if the cursor is not in a code block and use default behavior (indent, or other plugins that uses the tab key, like Obsidian Tabout)",
-		"zh-CN":
-			"当光标不在代码区块内的话，使用默认 Tab 键行为（缩进，或者其他使用 Tab 键的插件，如 Obsidian Tabout）",
+		"zh-CN": "当光标不在代码区块内的话，使用默认 Tab 键行为（缩进，或者其他使用 Tab 键的插件，如 Obsidian Tabout）",
 		"zh-TW":
 			"當游標不在程式碼區塊內的話，使用預設 Tab 鍵行為（縮排，或者其他使用 Tab 鍵的插件，如 Obsidian Tabout）",
 	},
 	allowExceptionDesc: {
 		"en-US":
 			"Indent line even when the selection is empty when the line matches the regex (For example, when cursor is on an empty list bullet)",
-		"zh-CN":
-			"若光标所在的那行匹配以下表达式时，仍然进行缩进（如该行为空白的清单列表）",
-		"zh-TW":
-			"若游標所在的那行符合以下表達式時，仍然進行縮排（如該行為空白的清單列表）",
+		"zh-CN": "若光标所在的那行匹配以下表达式时，仍然进行缩进（如该行为空白的清单列表）",
+		"zh-TW": "若游標所在的那行符合以下表達式時，仍然進行縮排（如該行為空白的清單列表）",
 	},
 	exceptionRegex: {
 		"en-US": "Exception regex",
@@ -214,10 +205,15 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 	},
 	developerModeDesc: {
 		"en-US":
-			"Enable debug on the Obsidian Developer Console, accessible by pressing Ctrl+Shift+I and selecting the Console tab, and show hidden, deprecated settings",
+			'Enable debug on the Obsidian Developer Console, accessible by pressing Ctrl+Shift+I and selecting the Console tab, and show hidden, deprecated settings. If you encounter problems with the plugin, please open an issue on Github. If the plugin is not working properly, check if the console shows that the tab key event is triggered. If not, either the hotkey is configured wrong, you may try other keys that are less likely to have a conflict, like "F6". If the tab key is not triggering, it is most likely that other plugins have acquired the tab key event. Lastly, you may try testing in a new vault (accessible at the bottom left toolbar).',
 		"zh-CN":
-			"开启侦错信息，并显示被隐藏、退役的设定们。终端可以透过按下 Ctrl+Shift+I 后选择 Console 分页",
+			'开启侦错信息，并显示被隐藏、退役的设定们。终端可以透过按下 Ctrl+Shift+I 后选择 Console 分页。若遇到问题，请在 Github 发起 issue。请先检查 Console 是否在按下 Tab 键后显示 "[restore tab] Tab key event triggered"。若否，尝试将自定义热键改为比如冲突概率较低的 "F6"。若 Tab 键无法触发，最有可能的是其他插件将 Tab 键事件拿走了。最后，你还可以开启新的储存库（左下工具列）进行测试。',
 		"zh-TW":
-			"開啟偵錯訊息，並顯示被隱藏、退役的設定們。終端可以透過按下 Ctrl+Shift+I 後選擇 Console 分頁",
+			'開啟偵錯訊息，並顯示被隱藏、退役的設定們。終端可以透過按下 Ctrl+Shift+I 後選擇 Console 分頁。若遇到問題，請在 Github 發起 issue。請先檢查 Console 是否在按下 Tab 鍵後顯示 "[restore tab] Tab key event triggered"。若否，嘗試將自定義熱鍵改為比如衝突機率較低的 "F6"。若 Tab 鍵無法觸發，最有可能的是其他插件將 Tab 鍵事件拿走了。最後，你還可以開啟新的儲存庫（左下工具列）進行測試。',
+	},
+	auto: {
+		"en-US": "Auto",
+		"zh-CN": "自动",
+		"zh-TW": "自動",
 	},
 };
