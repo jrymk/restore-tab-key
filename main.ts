@@ -190,6 +190,8 @@ export default class TabKeyPlugin extends Plugin {
 						run: (): boolean => {
 							this.log("Enter key event triggered");
 
+							if (!this.settings.enableBracesAutoIndent) return false; // return the enter event
+
 							const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 							if (!view) {
 								this.log("Failed to execute: Cannot get editor view");
