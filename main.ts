@@ -20,6 +20,11 @@ interface TabKeyPluginSettings {
 	hotkey: string;
 	language: string;
 	developerMode: boolean;
+
+	enableBracesAutoIndent: boolean;
+	braceRegex: string;
+	braceRegexOutsideCodeBlocks: string;
+	indentCharacters: string;
 }
 
 const DEFAULT_SETTINGS: TabKeyPluginSettings = {
@@ -38,6 +43,11 @@ const DEFAULT_SETTINGS: TabKeyPluginSettings = {
 	hotkey: "Tab",
 	language: "auto",
 	developerMode: false,
+
+	enableBracesAutoIndent: true,
+	braceRegex: "[{[(\"'`]$",
+	braceRegexOutsideCodeBlocks: "[{[(\"'`]$",
+	indentCharacters: " \t",
 };
 
 export default class TabKeyPlugin extends Plugin {
@@ -173,7 +183,92 @@ export default class TabKeyPlugin extends Plugin {
 							}
 							return true;
 						},
-						preventDefault: false, // always preventDefault
+						preventDefault: false, // always preventDefault?
+					},
+					{
+						key: "Enter",
+						run: (): boolean => {
+							this.log("Enter key event triggered");
+
+							const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+							if (!view) {
+								this.log("Failed to execute: Cannot get editor view");
+								return false;
+							}
+
+							const editor = view.editor;
+							if (
+								editor.getCursor("from").line != editor.getCursor("to").line ||
+								editor.getCursor("from").ch != editor.getCursor("to").ch
+							)
+								return false;
+
+							const cursor = editor.getCursor("from");
+							const line = editor.getLine(cursor.line);
+
+							//@ts-expect-error cm is not defined in the type docs
+							const token = this.getToken(editor.cm.state);
+
+							if (this.settings.developerMode) {
+								this.log("Current token: " + token);
+								this.log(
+									"which is" +
+										(token.includes("hmd-codeblock") ? " " : " not ") +
+										"a code block, matching regex: " +
+										(token.includes("hmd-codeblock")
+											? this.settings.braceRegex
+											: this.settings.braceRegexOutsideCodeBlocks)
+								);
+							}
+
+							if (
+								RegExp(
+									token.includes("hmd-codeblock")
+										? this.settings.braceRegex
+										: this.settings.braceRegexOutsideCodeBlocks,
+									"u"
+								).test(line.substring(0, cursor.ch))
+							) {
+								this.log("Code Auto Indent: Brace regex match");
+
+								let indentPrefixLen = 0;
+								while (this.settings.indentCharacters.includes(line[indentPrefixLen]))
+									indentPrefixLen++;
+								editor.exec("newlineAndIndent"); // do the "entering" (it doesn't actually indent, for some reason...)
+
+								if (cursor.ch == line.length) {
+									this.log("Pressed enter without closing pair to the right of the cursor");
+								} else if (
+									editor.getLine(cursor.line + 1).length &&
+									!this.settings.indentCharacters.includes(
+										editor
+											.getLine(cursor.line + 1)
+											.charAt(editor.getLine(cursor.line + 1).length - 1) // last character is not whitespace
+									)
+								) {
+									this.log(
+										"Closing pair or whatever was to the right of the cursor is still here, entering one more time"
+									);
+									editor.exec("newlineAndIndent");
+								} else {
+									this.log("Closing pair was automatically moved one extra line down");
+								}
+
+								editor.setLine(cursor.line + 1, line.substring(0, indentPrefixLen)); // existing indentation
+								editor.setLine(
+									cursor.line + 2,
+									line.substring(0, indentPrefixLen) + line.substring(cursor.ch)
+								); // existing indentation + suffix
+
+								editor.setCursor(cursor.line + 1, editor.getLine(cursor.line + 1).length);
+								editor.exec("indentMore"); // indent this line
+								editor.setCursor(cursor.line + 1, editor.getLine(cursor.line + 1).length);
+
+								return true; // don't "enter" again
+							}
+
+							return false; // enter like normal
+						},
 					},
 				])
 			)
@@ -224,9 +319,9 @@ class SettingTab extends PluginSettingTab {
 			this.plugin.settings.language == "auto"
 				? appLang == "zh-TW"
 					? "zh-TW"
-					: (appLang == "zh"
+					: appLang == "zh"
 					? "zh-CN"
-					: "en-US")
+					: "en-US"
 				: this.plugin.settings.language;
 
 		this.plugin.log("Using localization: " + lang);
@@ -378,12 +473,83 @@ class SettingTab extends PluginSettingTab {
 					)
 					.addExtraButton((button) =>
 						button.setIcon("rotate-ccw").onClick(async () => {
-							this.plugin.settings.exceptionRegex = "^[\\s\u{00A0}]*(-|\\d+\\.)( \\[ \\])?\\s*$";
+							this.plugin.settings.exceptionRegex = DEFAULT_SETTINGS.exceptionRegex;
 							this.display();
 							await this.plugin.saveSettings();
 						})
 					);
 			}
+		}
+
+		containerEl.createEl("h5", {
+			text: localization["bracesAutoIndent"][lang],
+		});
+
+		new Setting(containerEl)
+			.setName(localization["enableBracesAutoIndent"][lang])
+			.setDesc(localization["enableBracesAutoIndentDesc"][lang])
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.enableBracesAutoIndent).onChange(async (value) => {
+					this.plugin.settings.enableBracesAutoIndent = value;
+					this.display(); // refresh display
+					await this.plugin.saveSettings();
+				})
+			);
+
+		if (this.plugin.settings.enableBracesAutoIndent) {
+			new Setting(containerEl)
+				.setName(localization["braceRegex"][lang])
+				.setDesc(localization["braceRegexDesc"][lang])
+				.addText((textbox) =>
+					textbox
+						.setValue(this.plugin.settings.braceRegex)
+						.setPlaceholder(DEFAULT_SETTINGS.braceRegex)
+						.onChange(async (value) => {
+							this.plugin.settings.braceRegex = value;
+							await this.plugin.saveSettings();
+						})
+				)
+				.addExtraButton((button) =>
+					button.setIcon("rotate-ccw").onClick(async () => {
+						this.plugin.settings.braceRegex = DEFAULT_SETTINGS.braceRegex;
+						this.display();
+						await this.plugin.saveSettings();
+					})
+				)
+				.addExtraButton((button) =>
+					button.setIcon("ban").onClick(async () => {
+						this.plugin.settings.braceRegex = "disabled^";
+						this.display();
+						await this.plugin.saveSettings();
+					})
+				);
+
+			new Setting(containerEl)
+				.setName(localization["braceRegexOutsideCodeBlocks"][lang])
+				.setDesc(localization["braceRegexOutsideCodeBlocksDesc"][lang])
+				.addText((textbox) =>
+					textbox
+						.setValue(this.plugin.settings.braceRegexOutsideCodeBlocks)
+						.setPlaceholder(DEFAULT_SETTINGS.braceRegexOutsideCodeBlocks)
+						.onChange(async (value) => {
+							this.plugin.settings.braceRegexOutsideCodeBlocks = value;
+							await this.plugin.saveSettings();
+						})
+				)
+				.addExtraButton((button) =>
+					button.setIcon("rotate-ccw").onClick(async () => {
+						this.plugin.settings.braceRegexOutsideCodeBlocks = DEFAULT_SETTINGS.braceRegexOutsideCodeBlocks;
+						this.display();
+						await this.plugin.saveSettings();
+					})
+				)
+				.addExtraButton((button) =>
+					button.setIcon("ban").onClick(async () => {
+						this.plugin.settings.braceRegexOutsideCodeBlocks = "disabled^";
+						this.display();
+						await this.plugin.saveSettings();
+					})
+				);
 		}
 
 		if (this.plugin.settings.developerMode || !this.plugin.settings.activateOnlyOnCodeBlocks) {
@@ -442,7 +608,7 @@ class SettingTab extends PluginSettingTab {
 			)
 			.addExtraButton((button) =>
 				button.setIcon("rotate-ccw").onClick(async () => {
-					this.plugin.settings.hotkey = "Tab";
+					this.plugin.settings.hotkey = DEFAULT_SETTINGS.hotkey;
 					this.display(); // refresh display
 					await this.plugin.saveSettings();
 				})

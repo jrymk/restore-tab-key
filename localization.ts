@@ -216,4 +216,42 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 		"zh-CN": "自动",
 		"zh-TW": "自動",
 	},
+	bracesAutoIndent: {
+		"en-US": "Braces Auto Indent",
+		"zh-CN": "括弧自动缩进",
+		"zh-TW": "括弧自動縮排",
+	},
+	enableBracesAutoIndent: {
+		"en-US": "Enable braces auto indent",
+		"zh-CN": "启用括弧自动缩进",
+		"zh-TW": "啟用括弧自動縮排",
+	},
+	enableBracesAutoIndentDesc: {
+		"en-US":
+			"When the cursor is next to a brace character, pressing the Enter key will duplicate the indentation from the current line and then add an additional indent according to Obsidian settings",
+		"zh-CN": "當光標在括弧字元旁邊時，按下 Enter 鍵會複製當行的縮進，並再加一個縮進",
+		"zh-TW": "當游標在括弧字元旁邊時，按下 Enter 鍵會複製當行的縮排，並再加一個縮排",
+	},
+	braceRegex: {
+		"en-US": "Brace regex (within code blocks)",
+		"zh-CN": "括弧正则表达式（在代码区块内时）",
+		"zh-TW": "括弧正規表達式（在程式碼區塊內時）",
+	},
+	braceRegexDesc: {
+		"en-US":
+			'If the substring before the cursor matches this regex, it will be considered "next to a brace character". \ndefault: any character between [ and ]$, including braces, brackets, parentheses and quotes',
+		"zh-CN": "若光标以左的子字串和表达式匹配则会侦测为括弧。默认：在 [ 和 ]$ 之间的字元",
+		"zh-TW": "若游標以左的子字串和表達式匹配則會偵測為括弧。預設：在 [ 和 ]$ 之間的字元",
+	},
+	braceRegexOutsideCodeBlocks: {
+		"en-US": "Brace regex (outside code blocks)",
+		"zh-CN": "括弧正则表达式（不在代码区块内时）",
+		"zh-TW": "括弧正規表達式（不在程式碼區塊內時）",
+	},
+	braceRegexOutsideCodeBlocksDesc: {
+		"en-US":
+			"Same thing but when cursor is not in a code block. Note that indenting doesn't get rendered in Markdown.",
+		"zh-CN": "和前者一样，但在光标不在代码区块内时。注意：缩进不会被 Markdown 渲染出来",
+		"zh-TW": "和前者一樣，但在游標不在程式碼區塊內時。注意：縮排不會被 Markdown 渲染出來",
+	},
 };
