@@ -255,11 +255,13 @@ export default class TabKeyPlugin extends Plugin {
 								}
 
 								editor.setLine(cursor.line + 1, line.substring(0, indentPrefixLen)); // existing indentation
-								editor.setLine(
-									cursor.line + 2,
-									line.substring(0, indentPrefixLen) + line.substring(cursor.ch)
-								); // existing indentation + suffix
-
+								if (line.substring(cursor.ch)) {
+									// has suffix
+									editor.setLine(
+										cursor.line + 2,
+										line.substring(0, indentPrefixLen) + line.substring(cursor.ch)
+									); // existing indentation + suffix
+								}
 								editor.setCursor(cursor.line + 1, editor.getLine(cursor.line + 1).length);
 								editor.exec("indentMore"); // indent this line
 								editor.setCursor(cursor.line + 1, editor.getLine(cursor.line + 1).length);
