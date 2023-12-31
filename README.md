@@ -1,43 +1,44 @@
 # Restore Tab Key Plugin for Obsidian
 Restore tab key behaviour: tab key inserts a tab, the way it should be.
 
-#### Before
+To summarize, **this plugin can make code blocks, or anywhere, behave like any IDE as you would expect, everything regarding tabs and indentation**, which Obsidian does terribly.
+
+By default, there is no way to insert a tab character in Obsidian without cutting and pasting, can you believe that?
+
+Sure, tabs are pretty useless in Markdown, however, that can't be said in Markdown code blocks, the tab key behavior is just absolutely unreasonable, and this plugin should solve that.
+
+Check out the forum thread that inspired this plugin: [Feature Request: Option to disable tab to indent | Obsidian Forum](https://forum.obsidian.md/t/option-to-disable-tab-to-indent/40868)
+
+## Restore Tab Key
+### Before
 ![before](https://github.com/jrymk/restore-tab-key/assets/39593345/1c862e1d-b958-4a4e-a316-ce106676b2e8)
-#### After
+
+### After
 ![after](https://github.com/jrymk/restore-tab-key/assets/39593345/96c4dc5f-8396-46e3-af56-5b58f308a386)
 
 ---
 
-To summarize, **this plugin make the tab key insert tabs**, **without affecting the ability to quickly indenting lines**, just like most IDEs. In addition, it allows you to insert hard spaces quickly if you want a wide blank inside text.
+## Braces Auto Indent
+### Before
+![before_braces](https://github.com/jrymk/restore-tab-key/assets/39593345/82bd4625-0220-43c0-b96b-44f0716b1ab4)
 
-![restoreTabKeyDemo](https://user-images.githubusercontent.com/39593345/220376206-de457056-2a52-48f9-ad57-e69fa42b909a.gif)
+### After
+![after_braces](https://github.com/jrymk/restore-tab-key/assets/39593345/6fe4ecb1-bdc7-46af-b677-95cf65cba878)
 
-it solves the problem mentioned in this forum thread: https://forum.obsidian.md/t/option-to-disable-tab-to-indent/40868
-
----
-
-## Default behavior of the plugin
-
-When the Tab key is pressed...
-- Indent the lines that are selected, if there is any. If nothing is selected,
-- Indent the current line, if the current line is an empty list (0 or more tabs, followed by `- ` or `no. `), or
-- Insert a tab, otherwise
-
-Shift + Tab reduces indentation on the selected lines.
-
-## Only in code blocks
-
-If you just want IDE-like tabbing experience in code blocks, now you can do that!
 
 ---
 
 ## Settings
 
-![image](https://github.com/jrymk/restore-tab-key/assets/39593345/020faaf1-1bce-4f34-8155-184774dd2a46)
-![image](https://github.com/jrymk/restore-tab-key/assets/39593345/621b3a20-f26d-4c0d-a20b-e2eb58e76b77)
+### Quick configuration for just code
+- Turn on `Only activate in code blocks`
+- Decide to use space or tabs by setting `Use spaces instead of tab`
 
+---
 
-The tab key now works just like any other IDE. If you select some text and press tab, the selected lines will be indented. If nothing is selected, a tab will be inserted. There is also an option to insert tab regardless.
+ALL the settings
+![image](https://github.com/jrymk/restore-tab-key/assets/39593345/9cc236f5-9a8f-4077-9102-3efd2ebe61f8)
+![image](https://github.com/jrymk/restore-tab-key/assets/39593345/d64b20ff-bc4e-414b-84ca-401c2439f5f2)
 
 ---
 
