@@ -22,8 +22,10 @@ interface TabKeyPluginSettings {
 	developerMode: boolean;
 
 	enableBracesAutoIndent: boolean;
-	braceRegex: string;
-	braceRegexOutsideCodeBlocks: string;
+	braceCodeSetOpen: string;
+	braceCodeSetClose: string;
+	braceMarkdownSetOpen: string;
+	braceMarkdownSetClose: string;
 	indentCharacters: string;
 }
 
@@ -45,8 +47,10 @@ const DEFAULT_SETTINGS: TabKeyPluginSettings = {
 	developerMode: false,
 
 	enableBracesAutoIndent: true,
-	braceRegex: "[{[(\"'`]$",
-	braceRegexOutsideCodeBlocks: "[{[(\"'`]$",
+	braceCodeSetOpen: '["\\\\{$", "\\\\[$", "\\\\($", "\\"$", "\'$", "`$"]',
+	braceCodeSetClose: '["^\\\\}", "^\\\\]", "^\\\\)", "^\\"", "^\'", "^`"]',
+	braceMarkdownSetOpen: '["\\\\{$", "\\\\[$", "\\\\($", "\\"$", "\'$", "\\\\$\\\\$$", "<.+>$", "¡$", "¿$"]',
+	braceMarkdownSetClose: '["^\\\\}", "^\\\\]", "^\\\\)", "^\\"", "^\'", "^\\\\$\\\\$", "^<\\\\/\\\\w+>", "^!", "^?"]',
 	indentCharacters: " \t",
 };
 
@@ -156,11 +160,11 @@ export default class TabKeyPlugin extends Plugin {
 								const cursorFrom = editor.getCursor("from");
 								const tabStr = this.settings.useSpaces
 									? (this.settings.useHardSpace ? " " : " ").repeat(
-											this.settings.alignSpaces
-												? this.settings.spacesCount -
-														(cursorFrom.ch % this.settings.spacesCount)
-												: this.settings.spacesCount
-									  )
+										this.settings.alignSpaces
+											? this.settings.spacesCount -
+											(cursorFrom.ch % this.settings.spacesCount)
+											: this.settings.spacesCount
+									)
 									: "\t";
 
 								if (!somethingSelected && this.settings.allowException) {
@@ -215,23 +219,37 @@ export default class TabKeyPlugin extends Plugin {
 								this.log("Current token: " + token);
 								this.log(
 									"which is" +
-										(token.includes("hmd-codeblock") ? " " : " not ") +
-										"a code block, matching regex: " +
-										(token.includes("hmd-codeblock")
-											? this.settings.braceRegex
-											: this.settings.braceRegexOutsideCodeBlocks)
+									(token.includes("hmd-codeblock") ? " " : " not ") +
+									"a code block, matching regexes for " +
+									(token.includes("hmd-codeblock") ? "code" : "markdown")
 								);
 							}
 
-							if (
-								RegExp(
-									token.includes("hmd-codeblock")
-										? this.settings.braceRegex
-										: this.settings.braceRegexOutsideCodeBlocks,
-									"u"
-								).test(line.substring(0, cursor.ch))
-							) {
-								this.log("Code Auto Indent: Brace regex match");
+							let braceDetected = false;
+							const bracesOpen = JSON.parse(
+								token.includes("hmd-codeblock")
+									? this.settings.braceCodeSetOpen
+									: this.settings.braceMarkdownSetOpen
+							);
+							const bracesClose = JSON.parse(
+								token.includes("hmd-codeblock")
+									? this.settings.braceCodeSetClose
+									: this.settings.braceMarkdownSetClose
+							);
+
+							const pairs = Math.min(bracesOpen.length, bracesClose.length);
+							this.log("there are " + pairs + " pairs of braces defined");
+
+							for (let i = 0; i < pairs; i++) {
+								this.log("matching regex " + bracesOpen[i] + " and " + bracesClose[i]);
+								if (RegExp(bracesOpen[i], "u").test(line.substring(0, cursor.ch)) && RegExp(bracesClose[i], "u").test(line.substring(cursor.ch))) {
+									braceDetected = true;
+									break;
+								}
+							}
+
+							if (braceDetected) {
+								this.log("Code Auto Indent: Brace detected");
 
 								let indentPrefixLen = 0;
 								while (this.settings.indentCharacters.includes(line[indentPrefixLen]))
@@ -295,7 +313,7 @@ export default class TabKeyPlugin extends Plugin {
 		};
 	}
 
-	onunload() {}
+	onunload() { }
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
@@ -324,8 +342,8 @@ class SettingTab extends PluginSettingTab {
 				? appLang == "zh-TW"
 					? "zh-TW"
 					: appLang == "zh"
-					? "zh-CN"
-					: "en-US"
+						? "zh-CN"
+						: "en-US"
 				: this.plugin.settings.language;
 
 		this.plugin.log("Using localization: " + lang);
@@ -476,7 +494,7 @@ class SettingTab extends PluginSettingTab {
 							})
 					)
 					.addExtraButton((button) =>
-						button.setIcon("rotate-ccw").onClick(async () => {
+						button.setIcon("rotate-ccw").setTooltip(localization["extraButtonRestore"][lang]).onClick(async () => {
 							this.plugin.settings.exceptionRegex = DEFAULT_SETTINGS.exceptionRegex;
 							this.display();
 							await this.plugin.saveSettings();
@@ -502,54 +520,76 @@ class SettingTab extends PluginSettingTab {
 
 		if (this.plugin.settings.enableBracesAutoIndent) {
 			new Setting(containerEl)
-				.setName(localization["braceRegex"][lang])
-				.setDesc(localization["braceRegexDesc"][lang])
-				.addText((textbox) =>
+				.setName(localization["braceSetCode"][lang])
+				.setDesc(localization["braceSetCodeDesc"][lang])
+				.addTextArea((textbox) =>
 					textbox
-						.setValue(this.plugin.settings.braceRegex)
-						.setPlaceholder(DEFAULT_SETTINGS.braceRegex)
+						.setValue(this.plugin.settings.braceCodeSetOpen)
+						.setPlaceholder("json array of regexes")
 						.onChange(async (value) => {
-							this.plugin.settings.braceRegex = value;
+							this.plugin.settings.braceCodeSetOpen = value;
+							await this.plugin.saveSettings();
+						})
+				)
+				.addTextArea((textbox) =>
+					textbox
+						.setValue(this.plugin.settings.braceCodeSetClose)
+						.setPlaceholder("json array of regexes")
+						.onChange(async (value) => {
+							this.plugin.settings.braceCodeSetClose = value;
 							await this.plugin.saveSettings();
 						})
 				)
 				.addExtraButton((button) =>
-					button.setIcon("rotate-ccw").onClick(async () => {
-						this.plugin.settings.braceRegex = DEFAULT_SETTINGS.braceRegex;
+					button.setIcon("rotate-ccw").setTooltip(localization["extraButtonRestore"][lang]).onClick(async () => {
+						this.plugin.settings.braceCodeSetOpen = DEFAULT_SETTINGS.braceCodeSetOpen;
+						this.plugin.settings.braceCodeSetClose = DEFAULT_SETTINGS.braceCodeSetClose;
 						this.display();
 						await this.plugin.saveSettings();
 					})
 				)
 				.addExtraButton((button) =>
-					button.setIcon("ban").onClick(async () => {
-						this.plugin.settings.braceRegex = "disabled^";
+					button.setIcon("ban").setTooltip(localization["extraButtonDisable"][lang]).onClick(async () => {
+						this.plugin.settings.braceCodeSetOpen = "[]";
+						this.plugin.settings.braceCodeSetClose = "[]";
 						this.display();
 						await this.plugin.saveSettings();
 					})
 				);
 
 			new Setting(containerEl)
-				.setName(localization["braceRegexOutsideCodeBlocks"][lang])
-				.setDesc(localization["braceRegexOutsideCodeBlocksDesc"][lang])
-				.addText((textbox) =>
+				.setName(localization["braceSetMarkdown"][lang])
+				.setDesc(localization["braceSetMarkdownDesc"][lang])
+				.addTextArea((textbox) =>
 					textbox
-						.setValue(this.plugin.settings.braceRegexOutsideCodeBlocks)
-						.setPlaceholder(DEFAULT_SETTINGS.braceRegexOutsideCodeBlocks)
+						.setValue(this.plugin.settings.braceMarkdownSetOpen)
+						.setPlaceholder("json array of regexes")
 						.onChange(async (value) => {
-							this.plugin.settings.braceRegexOutsideCodeBlocks = value;
+							this.plugin.settings.braceMarkdownSetOpen = value;
+							await this.plugin.saveSettings();
+						})
+				)
+				.addTextArea((textbox) =>
+					textbox
+						.setValue(this.plugin.settings.braceMarkdownSetClose)
+						.setPlaceholder("json array of regexes")
+						.onChange(async (value) => {
+							this.plugin.settings.braceMarkdownSetClose = value;
 							await this.plugin.saveSettings();
 						})
 				)
 				.addExtraButton((button) =>
-					button.setIcon("rotate-ccw").onClick(async () => {
-						this.plugin.settings.braceRegexOutsideCodeBlocks = DEFAULT_SETTINGS.braceRegexOutsideCodeBlocks;
+					button.setIcon("rotate-ccw").setTooltip(localization["extraButtonRestore"][lang]).onClick(async () => {
+						this.plugin.settings.braceMarkdownSetOpen = DEFAULT_SETTINGS.braceMarkdownSetOpen;
+						this.plugin.settings.braceMarkdownSetClose = DEFAULT_SETTINGS.braceMarkdownSetClose;
 						this.display();
 						await this.plugin.saveSettings();
 					})
 				)
 				.addExtraButton((button) =>
-					button.setIcon("ban").onClick(async () => {
-						this.plugin.settings.braceRegexOutsideCodeBlocks = "disabled^";
+					button.setIcon("ban").setTooltip(localization["extraButtonDisable"][lang]).onClick(async () => {
+						this.plugin.settings.braceMarkdownSetOpen = "[]";
+						this.plugin.settings.braceMarkdownSetClose = "[]";
 						this.display();
 						await this.plugin.saveSettings();
 					})
@@ -611,7 +651,7 @@ class SettingTab extends PluginSettingTab {
 					})
 			)
 			.addExtraButton((button) =>
-				button.setIcon("rotate-ccw").onClick(async () => {
+				button.setIcon("rotate-ccw").setTooltip(localization["extraButtonRestore"][lang]).onClick(async () => {
 					this.plugin.settings.hotkey = DEFAULT_SETTINGS.hotkey;
 					this.display(); // refresh display
 					await this.plugin.saveSettings();

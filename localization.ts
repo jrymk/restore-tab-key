@@ -232,26 +232,36 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 		"zh-CN": "當光標在括弧字元旁邊時，按下 Enter 鍵會複製當行的縮進，並再加一個縮進",
 		"zh-TW": "當游標在括弧字元旁邊時，按下 Enter 鍵會複製當行的縮排，並再加一個縮排",
 	},
-	braceRegex: {
-		"en-US": "Brace regex (within code blocks)",
-		"zh-CN": "括弧正则表达式（在代码区块内时）",
-		"zh-TW": "括弧正規表達式（在程式碼區塊內時）",
+	braceSetCode: {
+		"en-US": "Paired braces set (within code blocks)",
+		"zh-CN": "成对标点符号/括号集合（在代码区块内时）",
+		"zh-TW": "成對標點符號/括弧集合（在程式碼區塊內時）",
 	},
-	braceRegexDesc: {
+	braceSetCodeDesc: {
 		"en-US":
-			'If the substring before the cursor matches this regex, it will be considered "next to a brace character". \ndefault: any character between [ and ]$, including braces, brackets, parentheses and quotes',
-		"zh-CN": "若光标以左的子字串和表达式匹配则会侦测为括弧。默认：在 [ 和 ]$ 之间的字元",
-		"zh-TW": "若游標以左的子字串和表達式匹配則會偵測為括弧。預設：在 [ 和 ]$ 之間的字元",
+			'Match the string before the cursor on the line, and after the line. If both match for the same index in the json array of regexes, a paired brace is detected.',
+		"zh-CN": "将光标前面及后面的字串进行正则表达式匹配，若在json阵列的同一个位置成功匹配则视为成对标点符号。",
+		"zh-TW": "將游標前面及後面的字串進行正規表達式匹配，若在json陣列的同一個位置成功匹配則視為成對標點符號。",
 	},
-	braceRegexOutsideCodeBlocks: {
+	braceSetMarkdown: {
 		"en-US": "Brace regex (outside code blocks)",
-		"zh-CN": "括弧正则表达式（不在代码区块内时）",
-		"zh-TW": "括弧正規表達式（不在程式碼區塊內時）",
+		"zh-CN": "成对标点符号/括号集合（不在代码区块内/一般 Markdown 区块内时）",
+		"zh-TW": "成對標點符號/括弧集合（不在程式碼區塊內/一般 Markdown 區塊內時）",
 	},
-	braceRegexOutsideCodeBlocksDesc: {
+	braceSetMarkdownDesc: {
 		"en-US":
-			"Same thing but when cursor is not in a code block. Note that indenting doesn't get rendered in Markdown.",
-		"zh-CN": "和前者一样，但在光标不在代码区块内时。注意：缩进不会被 Markdown 渲染出来",
-		"zh-TW": "和前者一樣，但在游標不在程式碼區塊內時。注意：縮排不會被 Markdown 渲染出來",
+			"Same thing but when cursor is not in a code block. Default includes multi line math expression $$ and HTML tags. Note that indenting doesn't get rendered in Markdown.",
+		"zh-CN": "和前者一样，但在光标不在代码区块内时。适用一般 Markdown 语法使用。预设值包括多行数学公式和 HTML tags。注意：缩进不会被 Markdown 渲染出来",
+		"zh-TW": "和前者一樣，但在游標不在程式碼區塊內時。適用一般 Markdown 語法使用。預設值包括多行數學公式和 HTML tags。 注意：縮排不會被 Markdown 渲染出來",
+	},
+	extraButtonRestore: {
+		"en-US": "Restore default",
+		"zh-CN": "恢復默认值",
+		"zh-TW": "恢復預設值"
+	},
+	extraButtonDisable: {
+		"en-US": "Disable",
+		"zh-CN": "关闭",
+		"zh-TW": "關閉"
 	},
 };
