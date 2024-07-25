@@ -100,7 +100,7 @@ export default class TabKeyPlugin extends Plugin {
 
 							if (token.includes("inline-code")) {
 								// inline-code will take precedence, if an inline code is in a list, for example
-								if (!this.settings.activateInCodeBlocks) {
+								if (!this.settings.activateInInlineCode) {
 									this.log("Did not execute: Inline code environment not activated");
 									return false; // When the command function returns `false`, further bindings will be tried for the key.
 								}
