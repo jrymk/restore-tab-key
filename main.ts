@@ -95,8 +95,15 @@ export default class TabKeyPlugin extends Plugin {
 							const sourceMode: boolean = view.getState().source;
 							//@ts-expect-error cm is not defined in the type docs
 							const token = this.getToken(editor.cm.state);
-
 							this.log("Current token: " + token);
+
+							const cursorFrom = editor.getCursor("from");
+							const cursorTo = editor.getCursor("to");
+							const somethingSelected = cursorFrom.line != cursorTo.line || cursorFrom.ch != cursorTo.ch;
+							const app = this.app as any;
+							const isTable =
+								RegExp(`^ *\\|`, "u").test(editor.getLine(cursorFrom.line)) ||
+								token.includes("HyperMD-table");
 
 							if (token.includes("inline-code")) {
 								// inline-code will take precedence, if an inline code is in a list, for example
@@ -114,17 +121,12 @@ export default class TabKeyPlugin extends Plugin {
 									this.log("Did not execute: List environment not activated");
 									return false; // When the command function returns `false`, further bindings will be tried for the key.
 								}
-							} else if (!token.includes("table")) {
+							} else if (!isTable) {
 								if (!this.settings.activateInOthers) {
 									this.log("Did not execute: Other environments not activated");
 									return false; // When the command function returns `false`, further bindings will be tried for the key.
 								}
 							}
-
-							const cursorFrom = editor.getCursor("from");
-							const cursorTo = editor.getCursor("to");
-							const somethingSelected = cursorFrom.line != cursorTo.line || cursorFrom.ch != cursorTo.ch;
-							const app = this.app as any;
 
 							if (
 								this.settings.useOutlinerBetterTab &&
@@ -143,26 +145,24 @@ export default class TabKeyPlugin extends Plugin {
 								}
 							}
 
-							if (RegExp(`^ *\\|`, "u").test(editor.getLine(cursorFrom.line))) {
-								if (!this.settings.activateInTables) {
-									if (!sourceMode) {
-										// live preview mode
-										this.log("Table environment in Live Preview mode");
+							if (isTable && !this.settings.activateInTables) {
+								if (!sourceMode) {
+									// live preview mode
+									this.log("Table environment in Live Preview mode");
 
-										if (this.settings.obsidianTableEditor) {
-											// leave the editor alone
-											this.log("Did not execute: Handled by Obsidian Table Editor");
-											return false;
-										}
-									} else {
-										// source mode
-										this.log("Table environment in Source mode");
+									if (this.settings.obsidianTableEditor) {
+										// leave the editor alone
+										this.log("Did not execute: Handled by Obsidian Table Editor");
+										return false;
+									}
+								} else {
+									// source mode
+									this.log("Table environment in Source mode");
 
-										if (this.settings.useAdvancedTables) {
-											app.commands.executeCommandById("table-editor-obsidian:next-cell");
-											this.log("Did not execute: Handled by Advanced Table");
-											return true;
-										}
+									if (this.settings.useAdvancedTables) {
+										app.commands.executeCommandById("table-editor-obsidian:next-cell");
+										this.log("Did not execute: Handled by Advanced Table");
+										return true;
 									}
 								}
 							}
