@@ -114,6 +114,11 @@ export default class TabKeyPlugin extends Plugin {
 									this.log("Did not execute: List environment not activated");
 									return false; // When the command function returns `false`, further bindings will be tried for the key.
 								}
+							} else {
+								if (!this.settings.activateInOthers) {
+									this.log("Did not execute: Other environments not activated");
+									return false; // When the command function returns `false`, further bindings will be tried for the key.
+								}
 							}
 
 							const cursorFrom = editor.getCursor("from");
