@@ -5,7 +5,6 @@ import { localization } from "localization";
 import { App, MarkdownView, Plugin, PluginSettingTab, Setting } from "obsidian";
 
 interface TabKeyPluginSettings {
-	activateOnlyOnCodeBlocks: boolean;
 	indentsIfSelection: boolean;
 	indentsIfSelectionOnlyForMultipleLines: boolean;
 	useSpaces: boolean;
@@ -36,7 +35,6 @@ interface TabKeyPluginSettings {
 }
 
 const DEFAULT_SETTINGS: TabKeyPluginSettings = {
-	activateOnlyOnCodeBlocks: false,
 	indentsIfSelection: true,
 	indentsIfSelectionOnlyForMultipleLines: true,
 	useSpaces: false,
@@ -653,7 +651,7 @@ class SettingTab extends PluginSettingTab {
 				);
 		}
 
-		if (this.plugin.settings.developerMode || !this.plugin.settings.activateOnlyOnCodeBlocks) {
+		if (this.plugin.settings.developerMode) {
 			containerEl.createEl("h5", {
 				text: localization["pluginCompatibility"][lang],
 			});
