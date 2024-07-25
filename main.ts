@@ -27,6 +27,12 @@ interface TabKeyPluginSettings {
 	braceMarkdownSetOpen: string;
 	braceMarkdownSetClose: string;
 	indentCharacters: string;
+
+	activateInCodeBlocks: boolean;
+	activateInLists: boolean;
+	activateInTables: boolean;
+	activateInInlineCode: boolean;
+	activateInOthers: boolean;
 }
 
 const DEFAULT_SETTINGS: TabKeyPluginSettings = {
@@ -37,7 +43,7 @@ const DEFAULT_SETTINGS: TabKeyPluginSettings = {
 	alignSpaces: true,
 	useHardSpace: false, // U+00A0 is technically not a space, let's not use it by default
 	spacesCount: 4,
-	allowException: true,
+	allowException: false,
 	exceptionRegex: "^[\\s\u{00A0}]*(-|\\d+\\.)( \\[ \\])?\\s*$",
 	useAdvancedTables: false,
 	obsidianTableEditor: true,
@@ -52,6 +58,12 @@ const DEFAULT_SETTINGS: TabKeyPluginSettings = {
 	braceMarkdownSetOpen: '["\\\\{$", "\\\\[$", "\\\\($", "\\"$", "\'$", "\\\\$\\\\$$", "<.+>$", "¡$", "¿$"]',
 	braceMarkdownSetClose: '["^\\\\}", "^\\\\]", "^\\\\)", "^\\"", "^\'", "^\\\\$\\\\$", "^<\\\\/\\\\w+>", "^!", "^?"]',
 	indentCharacters: " \t",
+
+	activateInCodeBlocks: true,
+	activateInLists: false,
+	activateInTables: false,
+	activateInInlineCode: false,
+	activateInOthers: false,
 };
 
 export default class TabKeyPlugin extends Plugin {
@@ -88,19 +100,21 @@ export default class TabKeyPlugin extends Plugin {
 
 							this.log("Current token: " + token);
 
-							if (!token.includes("hmd-codeblock")) {
-								// not in a code block
-								if (this.settings.activateOnlyOnCodeBlocks) {
-									this.log("Did not execute: Not a code block");
+							if (token.includes("inline-code")) {
+								// inline-code will take precedence, if an inline code is in a list, for example
+								if (!this.settings.activateInCodeBlocks) {
+									this.log("Did not execute: Inline code environment not activated");
 									return false; // When the command function returns `false`, further bindings will be tried for the key.
 								}
-							} else {
-								// cursor is in a code block; without dev mode, these recommended settings will override. we will update settings temporarily without saving
-								if (!this.settings.developerMode) {
-									this.settings.allowException = false; // in case the code matches the regex (- or 1. or - [ ] etc.)
-									this.settings.useAdvancedTables = false; // in case the code has pipes (|)
-									this.settings.obsidianTableEditor = false;
-									this.settings.useOutlinerBetterTab = false;
+							} else if (token.includes("hmd-codeblock")) {
+								if (!this.settings.activateInCodeBlocks) {
+									this.log("Did not execute: Code block environment not activated");
+									return false; // When the command function returns `false`, further bindings will be tried for the key.
+								}
+							} else if (token.includes("list-1")) {
+								if (!this.settings.activateInLists) {
+									this.log("Did not execute: List environment not activated");
+									return false; // When the command function returns `false`, further bindings will be tried for the key.
 								}
 							}
 
@@ -127,23 +141,25 @@ export default class TabKeyPlugin extends Plugin {
 							}
 
 							if (RegExp(`^\\|`, "u").test(editor.getLine(cursorFrom.line))) {
-								if (!sourceMode) {
-									// live preview mode
-									this.log("Table environment in Live Preview mode");
+								if (!this.settings.activateInTables) {
+									if (!sourceMode) {
+										// live preview mode
+										this.log("Table environment in Live Preview mode");
 
-									if (this.settings.obsidianTableEditor) {
-										// leave the editor alone
-										this.log("Did not execute: Handled by Obsidian Table Editor");
-										return false;
-									}
-								} else {
-									// source mode
-									this.log("Table environment in Source mode");
+										if (this.settings.obsidianTableEditor) {
+											// leave the editor alone
+											this.log("Did not execute: Handled by Obsidian Table Editor");
+											return false;
+										}
+									} else {
+										// source mode
+										this.log("Table environment in Source mode");
 
-									if (this.settings.useAdvancedTables) {
-										app.commands.executeCommandById("table-editor-obsidian:next-cell");
-										this.log("Did not execute: Handled by Advanced Table");
-										return true;
+										if (this.settings.useAdvancedTables) {
+											app.commands.executeCommandById("table-editor-obsidian:next-cell");
+											this.log("Did not execute: Handled by Advanced Table");
+											return true;
+										}
 									}
 								}
 							}
@@ -160,11 +176,11 @@ export default class TabKeyPlugin extends Plugin {
 								const cursorFrom = editor.getCursor("from");
 								const tabStr = this.settings.useSpaces
 									? (this.settings.useHardSpace ? " " : " ").repeat(
-										this.settings.alignSpaces
-											? this.settings.spacesCount -
-											(cursorFrom.ch % this.settings.spacesCount)
-											: this.settings.spacesCount
-									)
+											this.settings.alignSpaces
+												? this.settings.spacesCount -
+														(cursorFrom.ch % this.settings.spacesCount)
+												: this.settings.spacesCount
+									  )
 									: "\t";
 
 								if (!somethingSelected && this.settings.allowException) {
@@ -219,9 +235,9 @@ export default class TabKeyPlugin extends Plugin {
 								this.log("Current token: " + token);
 								this.log(
 									"which is" +
-									(token.includes("hmd-codeblock") ? " " : " not ") +
-									"a code block, matching regexes for " +
-									(token.includes("hmd-codeblock") ? "code" : "markdown")
+										(token.includes("hmd-codeblock") ? " " : " not ") +
+										"a code block, matching regexes for " +
+										(token.includes("hmd-codeblock") ? "code" : "markdown")
 								);
 							}
 
@@ -242,7 +258,10 @@ export default class TabKeyPlugin extends Plugin {
 
 							for (let i = 0; i < pairs; i++) {
 								this.log("matching regex " + bracesOpen[i] + " and " + bracesClose[i]);
-								if (RegExp(bracesOpen[i], "u").test(line.substring(0, cursor.ch)) && RegExp(bracesClose[i], "u").test(line.substring(cursor.ch))) {
+								if (
+									RegExp(bracesOpen[i], "u").test(line.substring(0, cursor.ch)) &&
+									RegExp(bracesClose[i], "u").test(line.substring(cursor.ch))
+								) {
 									braceDetected = true;
 									break;
 								}
@@ -313,7 +332,7 @@ export default class TabKeyPlugin extends Plugin {
 		};
 	}
 
-	onunload() { }
+	onunload() {}
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
@@ -342,8 +361,8 @@ class SettingTab extends PluginSettingTab {
 				? appLang == "zh-TW"
 					? "zh-TW"
 					: appLang == "zh"
-						? "zh-CN"
-						: "en-US"
+					? "zh-CN"
+					: "en-US"
 				: this.plugin.settings.language;
 
 		this.plugin.log("Using localization: " + lang);
@@ -434,15 +453,38 @@ class SettingTab extends PluginSettingTab {
 		});
 
 		new Setting(containerEl)
-			.setName(localization["onlyInCodeBlocks"][lang])
-			.setDesc(localization["onlyInCodeBlocksDesc"][lang])
-			.addToggle((toggle) =>
-				toggle.setValue(this.plugin.settings.activateOnlyOnCodeBlocks).onChange(async (value) => {
-					this.plugin.settings.activateOnlyOnCodeBlocks = value;
-					this.display(); // refresh display
-					await this.plugin.saveSettings();
-				})
-			);
+			.setName(localization["activateIn"][lang])
+			.setDesc(localization["activateInDesc"][lang]);
+		new Setting(containerEl).setName("    " + localization["activateInCodeBlocks"][lang]).addToggle((toggle) =>
+			toggle.setValue(this.plugin.settings.activateInCodeBlocks).onChange(async (value) => {
+				this.plugin.settings.activateInCodeBlocks = value;
+				await this.plugin.saveSettings();
+			})
+		);
+		new Setting(containerEl).setName("    " + localization["activateInLists"][lang]).addToggle((toggle) =>
+			toggle.setValue(this.plugin.settings.activateInLists).onChange(async (value) => {
+				this.plugin.settings.activateInLists = value;
+				await this.plugin.saveSettings();
+			})
+		);
+		new Setting(containerEl).setName("    " + localization["activateInTables"][lang]).addToggle((toggle) =>
+			toggle.setValue(this.plugin.settings.activateInTables).onChange(async (value) => {
+				this.plugin.settings.activateInTables = value;
+				await this.plugin.saveSettings();
+			})
+		);
+		new Setting(containerEl).setName("    " + localization["activateInInlineCode"][lang]).addToggle((toggle) =>
+			toggle.setValue(this.plugin.settings.activateInInlineCode).onChange(async (value) => {
+				this.plugin.settings.activateInInlineCode = value;
+				await this.plugin.saveSettings();
+			})
+		);
+		new Setting(containerEl).setName("    " + localization["activateInOthers"][lang]).addToggle((toggle) =>
+			toggle.setValue(this.plugin.settings.activateInOthers).onChange(async (value) => {
+				this.plugin.settings.activateInOthers = value;
+				await this.plugin.saveSettings();
+			})
+		);
 
 		new Setting(containerEl)
 			.setName(localization["indentWhenSelectionNotEmpty"][lang])
@@ -469,7 +511,7 @@ class SettingTab extends PluginSettingTab {
 				);
 		}
 
-		if (this.plugin.settings.developerMode || !this.plugin.settings.activateOnlyOnCodeBlocks) {
+		if (this.plugin.settings.developerMode) {
 			new Setting(containerEl)
 				.setName(localization["allowException"][lang])
 				.setDesc(localization["allowExceptionDesc"][lang])
@@ -494,11 +536,14 @@ class SettingTab extends PluginSettingTab {
 							})
 					)
 					.addExtraButton((button) =>
-						button.setIcon("rotate-ccw").setTooltip(localization["extraButtonRestore"][lang]).onClick(async () => {
-							this.plugin.settings.exceptionRegex = DEFAULT_SETTINGS.exceptionRegex;
-							this.display();
-							await this.plugin.saveSettings();
-						})
+						button
+							.setIcon("rotate-ccw")
+							.setTooltip(localization["extraButtonRestore"][lang])
+							.onClick(async () => {
+								this.plugin.settings.exceptionRegex = DEFAULT_SETTINGS.exceptionRegex;
+								this.display();
+								await this.plugin.saveSettings();
+							})
 					);
 			}
 		}
@@ -541,20 +586,26 @@ class SettingTab extends PluginSettingTab {
 						})
 				)
 				.addExtraButton((button) =>
-					button.setIcon("rotate-ccw").setTooltip(localization["extraButtonRestore"][lang]).onClick(async () => {
-						this.plugin.settings.braceCodeSetOpen = DEFAULT_SETTINGS.braceCodeSetOpen;
-						this.plugin.settings.braceCodeSetClose = DEFAULT_SETTINGS.braceCodeSetClose;
-						this.display();
-						await this.plugin.saveSettings();
-					})
+					button
+						.setIcon("rotate-ccw")
+						.setTooltip(localization["extraButtonRestore"][lang])
+						.onClick(async () => {
+							this.plugin.settings.braceCodeSetOpen = DEFAULT_SETTINGS.braceCodeSetOpen;
+							this.plugin.settings.braceCodeSetClose = DEFAULT_SETTINGS.braceCodeSetClose;
+							this.display();
+							await this.plugin.saveSettings();
+						})
 				)
 				.addExtraButton((button) =>
-					button.setIcon("ban").setTooltip(localization["extraButtonDisable"][lang]).onClick(async () => {
-						this.plugin.settings.braceCodeSetOpen = "[]";
-						this.plugin.settings.braceCodeSetClose = "[]";
-						this.display();
-						await this.plugin.saveSettings();
-					})
+					button
+						.setIcon("ban")
+						.setTooltip(localization["extraButtonDisable"][lang])
+						.onClick(async () => {
+							this.plugin.settings.braceCodeSetOpen = "[]";
+							this.plugin.settings.braceCodeSetClose = "[]";
+							this.display();
+							await this.plugin.saveSettings();
+						})
 				);
 
 			new Setting(containerEl)
@@ -579,20 +630,26 @@ class SettingTab extends PluginSettingTab {
 						})
 				)
 				.addExtraButton((button) =>
-					button.setIcon("rotate-ccw").setTooltip(localization["extraButtonRestore"][lang]).onClick(async () => {
-						this.plugin.settings.braceMarkdownSetOpen = DEFAULT_SETTINGS.braceMarkdownSetOpen;
-						this.plugin.settings.braceMarkdownSetClose = DEFAULT_SETTINGS.braceMarkdownSetClose;
-						this.display();
-						await this.plugin.saveSettings();
-					})
+					button
+						.setIcon("rotate-ccw")
+						.setTooltip(localization["extraButtonRestore"][lang])
+						.onClick(async () => {
+							this.plugin.settings.braceMarkdownSetOpen = DEFAULT_SETTINGS.braceMarkdownSetOpen;
+							this.plugin.settings.braceMarkdownSetClose = DEFAULT_SETTINGS.braceMarkdownSetClose;
+							this.display();
+							await this.plugin.saveSettings();
+						})
 				)
 				.addExtraButton((button) =>
-					button.setIcon("ban").setTooltip(localization["extraButtonDisable"][lang]).onClick(async () => {
-						this.plugin.settings.braceMarkdownSetOpen = "[]";
-						this.plugin.settings.braceMarkdownSetClose = "[]";
-						this.display();
-						await this.plugin.saveSettings();
-					})
+					button
+						.setIcon("ban")
+						.setTooltip(localization["extraButtonDisable"][lang])
+						.onClick(async () => {
+							this.plugin.settings.braceMarkdownSetOpen = "[]";
+							this.plugin.settings.braceMarkdownSetClose = "[]";
+							this.display();
+							await this.plugin.saveSettings();
+						})
 				);
 		}
 
@@ -651,11 +708,14 @@ class SettingTab extends PluginSettingTab {
 					})
 			)
 			.addExtraButton((button) =>
-				button.setIcon("rotate-ccw").setTooltip(localization["extraButtonRestore"][lang]).onClick(async () => {
-					this.plugin.settings.hotkey = DEFAULT_SETTINGS.hotkey;
-					this.display(); // refresh display
-					await this.plugin.saveSettings();
-				})
+				button
+					.setIcon("rotate-ccw")
+					.setTooltip(localization["extraButtonRestore"][lang])
+					.onClick(async () => {
+						this.plugin.settings.hotkey = DEFAULT_SETTINGS.hotkey;
+						this.display(); // refresh display
+						await this.plugin.saveSettings();
+					})
 			);
 
 		new Setting(containerEl)

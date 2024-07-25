@@ -66,6 +66,41 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 		"zh-CN": "Tab 键行为",
 		"zh-TW": "Tab 鍵行為",
 	},
+	activateIn: {
+		"en-US": "Activate plugin in Markdown environment",
+		"zh-CN": "在 Markdown 环境中启用插件",
+		"zh-TW": "在 Markdown 環境中啟用插件",
+	},
+	activateInDesc: {
+		"en-US": "On: Insert tab character. Off: Indent, or next cell for tables",
+		"zh-CN": "开启：插入 Tab 字符。关闭：缩排，或者在表格中为移至下一格",
+		"zh-TW": "開啟：插入 Tab 字元。關閉：縮排，或者在表格中為移至下一格",
+	},
+	activateInCodeBlocks: {
+		"en-US": "Code blocks",
+		"zh-CN": "代码区块",
+		"zh-TW": "程式碼區塊",
+	},
+	activateInLists: {
+		"en-US": "Lists",
+		"zh-CN": "列表",
+		"zh-TW": "列表",
+	},
+	activateInTables: {
+		"en-US": "Tables",
+		"zh-CN": "表格",
+		"zh-TW": "表格",
+	},
+	activateInInlineCode: {
+		"en-US": "Inline code",
+		"zh-CN": "行內代码（inline code）",
+		"zh-TW": "行內程式碼（inline code）",
+	},
+	activateInOthers: {
+		"en-US": "Others",
+		"zh-CN": "其他",
+		"zh-TW": "其他",
+	},
 	indentWhenSelectionNotEmpty: {
 		"en-US": "Indents when selection is not empty",
 		"zh-CN": "在有文字被选取时進行缩排",
@@ -94,18 +129,6 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 		"en-US": "Allow exceptions for indenting",
 		"zh-CN": "允许对缩进进行例外处理",
 		"zh-TW": "對縮排進行例外處理",
-	},
-	onlyInCodeBlocks: {
-		"en-US": "Only activate in code blocks",
-		"zh-CN": "仅在代码区块内激活",
-		"zh-TW": "僅在程式碼區塊內啟用",
-	},
-	onlyInCodeBlocksDesc: {
-		"en-US":
-			"Will do nothing if the cursor is not in a code block and use default behavior (indent, or other plugins that uses the tab key, like Obsidian Tabout)",
-		"zh-CN": "当光标不在代码区块内的话，使用默认 Tab 键行为（缩进，或者其他使用 Tab 键的插件，如 Obsidian Tabout）",
-		"zh-TW":
-			"當游標不在程式碼區塊內的話，使用預設 Tab 鍵行為（縮排，或者其他使用 Tab 鍵的插件，如 Obsidian Tabout）",
 	},
 	allowExceptionDesc: {
 		"en-US":
@@ -239,7 +262,7 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 	},
 	braceSetCodeDesc: {
 		"en-US":
-			'Match the string before the cursor on the line, and after the line. If both match for the same index in the json array of regexes, a paired brace is detected.',
+			"Match the string before the cursor on the line, and after the line. If both match for the same index in the json array of regexes, a paired brace is detected.",
 		"zh-CN": "将光标前面及后面的字串进行正则表达式匹配，若在json阵列的同一个位置成功匹配则视为成对标点符号。",
 		"zh-TW": "將游標前面及後面的字串進行正規表達式匹配，若在json陣列的同一個位置成功匹配則視為成對標點符號。",
 	},
@@ -251,17 +274,19 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 	braceSetMarkdownDesc: {
 		"en-US":
 			"Same thing but when cursor is not in a code block. Default includes multi line math expression $$ and HTML tags. Note that indenting doesn't get rendered in Markdown.",
-		"zh-CN": "和前者一样，但在光标不在代码区块内时。适用一般 Markdown 语法使用。预设值包括多行数学公式和 HTML tags。注意：缩进不会被 Markdown 渲染出来",
-		"zh-TW": "和前者一樣，但在游標不在程式碼區塊內時。適用一般 Markdown 語法使用。預設值包括多行數學公式和 HTML tags。 注意：縮排不會被 Markdown 渲染出來",
+		"zh-CN":
+			"和前者一样，但在光标不在代码区块内时。适用一般 Markdown 语法使用。预设值包括多行数学公式和 HTML tags。注意：缩进不会被 Markdown 渲染出来",
+		"zh-TW":
+			"和前者一樣，但在游標不在程式碼區塊內時。適用一般 Markdown 語法使用。預設值包括多行數學公式和 HTML tags。 注意：縮排不會被 Markdown 渲染出來",
 	},
 	extraButtonRestore: {
 		"en-US": "Restore default",
 		"zh-CN": "恢復默认值",
-		"zh-TW": "恢復預設值"
+		"zh-TW": "恢復預設值",
 	},
 	extraButtonDisable: {
 		"en-US": "Disable",
 		"zh-CN": "关闭",
-		"zh-TW": "關閉"
+		"zh-TW": "關閉",
 	},
 };
