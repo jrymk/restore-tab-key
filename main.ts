@@ -114,7 +114,7 @@ export default class TabKeyPlugin extends Plugin {
 									this.log("Did not execute: List environment not activated");
 									return false; // When the command function returns `false`, further bindings will be tried for the key.
 								}
-							} else {
+							} else if (!token.includes("table")) {
 								if (!this.settings.activateInOthers) {
 									this.log("Did not execute: Other environments not activated");
 									return false; // When the command function returns `false`, further bindings will be tried for the key.
@@ -143,7 +143,7 @@ export default class TabKeyPlugin extends Plugin {
 								}
 							}
 
-							if (RegExp(`^\\|`, "u").test(editor.getLine(cursorFrom.line))) {
+							if (RegExp(`^ *\\|`, "u").test(editor.getLine(cursorFrom.line))) {
 								if (!this.settings.activateInTables) {
 									if (!sourceMode) {
 										// live preview mode

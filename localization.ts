@@ -92,7 +92,7 @@ export const localization: { [id: string]: { [lang: string]: string } } = {
 		"zh-TW": "表格",
 	},
 	activateInInlineCode: {
-		"en-US": "Inline code",
+		"en-US": "Inline code / Indented code",
 		"zh-CN": "行內代码（inline code）",
 		"zh-TW": "行內程式碼（inline code）",
 	},
