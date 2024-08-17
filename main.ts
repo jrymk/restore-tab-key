@@ -116,7 +116,7 @@ export default class TabKeyPlugin extends Plugin {
 									this.log("Did not execute: Code block environment not activated");
 									return false; // When the command function returns `false`, further bindings will be tried for the key.
 								}
-							} else if (token.includes("list-1")) {
+							} else if (token.includes("list")) {
 								if (!this.settings.activateInLists) {
 									this.log("Did not execute: List environment not activated");
 									return false; // When the command function returns `false`, further bindings will be tried for the key.
