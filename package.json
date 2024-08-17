@@ -1,6 +1,6 @@
 {
 	"name": "restore-tab-key",
-	"version": "1.18.5",
+	"version": "1.18.6",
 	"description": "Restore tab key behaviour: tab key inserts a tab, the way it should be.",
 	"main": "main.js",
 	"scripts": {
